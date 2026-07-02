@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HospitalAI — the HITL workflow, walked through</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0B0D10;
+    --surface:#14171B;
+    --surface-raised:#191D22;
+    --border:#23272D;
+    --border-soft:#1B1F24;
+    --text:#EDEEF0;
+    --text-dim:#8B93A0;
+    --text-faint:#565D69;
+    --critical:#F0453A;
+    --critical-dim:#3A1A18;
+    --warning:#F5A524;
+    --warning-dim:#3A2C10;
+    --stable:#2BB673;
+    --stable-dim:#12301F;
+    --ai:#6366F1;
+    --ai-dim:#1E1F42;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html{background:var(--bg);}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Inter',sans-serif;
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:920px;margin:0 auto;padding:0 32px;}
+  ::selection{background:var(--ai);color:#fff;}
+
+  /* ---------- HERO ---------- */
+  .hero{
+    padding:88px 0 56px;
+    border-bottom:1px solid var(--border-soft);
+    position:relative;
+    overflow:hidden;
+  }
+  .eyebrow{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--stable);
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom:28px;
+  }
+  .eyebrow::before{
+    content:'';
+    width:7px;height:7px;border-radius:50%;
+    background:var(--stable);
+    box-shadow:0 0 0 3px var(--stable-dim);
+  }
+  h1{
+    font-family:'Space Grotesk',sans-serif;
+    font-weight:700;
+    font-size:56px;
+    line-height:1.04;
+    letter-spacing:-.02em;
+    max-width:680px;
+  }
+  h1 span{color:var(--text-dim);}
+  .hero-sub{
+    margin-top:20px;
+    font-size:17px;
+    color:var(--text-dim);
+    max-width:560px;
+  }
+  .ecg-band{
+    margin-top:52px;
+    height:74px;
+    position:relative;
+  }
+  .ecg-band svg{width:100%;height:100%;display:block;overflow:visible;}
+  .ecg-line{
+    fill:none;
+    stroke:var(--stable);
+    stroke-width:1.6;
+    stroke-linecap:round;
+    stroke-linejoin:round;
+  }
+  .ecg-line.spike{stroke:var(--critical);}
+  .ecg-dot{fill:var(--text-faint);}
+
+  /* ---------- ACTORS ---------- */
+  .actors{
+    display:flex;
+    gap:28px;
+    padding:36px 0;
+    border-bottom:1px solid var(--border-soft);
+    flex-wrap:wrap;
+  }
+  .actor{display:flex;align-items:center;gap:10px;}
+  .actor-dot{
+    width:30px;height:30px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;font-weight:500;
+    border:1px solid var(--border);
+    color:var(--text-dim);
+    flex-shrink:0;
+  }
+  .actor-label{font-size:13px;color:var(--text-dim);}
+  .actor-label b{color:var(--text);font-weight:500;}
+
+  /* ---------- TIMELINE ---------- */
+  .timeline{padding:64px 0 8px;position:relative;}
+  .timeline-head{margin-bottom:44px;}
+  .timeline-head h2{
+    font-family:'Space Grotesk',sans-serif;
+    font-weight:500;
+    font-size:22px;
+  }
+  .timeline-head p{color:var(--text-dim);font-size:14px;margin-top:6px;}
+
+  .step{
+    display:grid;
+    grid-template-columns:56px 1fr;
+    gap:24px;
+    position:relative;
+  }
+  .step-rail{
+    position:relative;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+  }
+  .step-rail::before{
+    content:'';
+    position:absolute;
+    top:44px;bottom:-40px;
+    width:1px;
+    background:var(--border);
+  }
+  .step:last-child .step-rail::before{display:none;}
+  .step-index{
+    width:44px;height:44px;
+    border-radius:50%;
+    border:1px solid var(--border);
+    background:var(--surface);
+    display:flex;align-items:center;justify-content:center;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:13px;
+    color:var(--text-dim);
+    flex-shrink:0;
+    z-index:1;
+  }
+  .step-index.critical{border-color:var(--critical);color:var(--critical);background:var(--critical-dim);}
+  .step-index.warning{border-color:var(--warning);color:var(--warning);background:var(--warning-dim);}
+  .step-index.stable{border-color:var(--stable);color:var(--stable);background:var(--stable-dim);}
+  .step-index.ai{border-color:var(--ai);color:var(--ai);background:var(--ai-dim);}
+
+  .step-body{padding-bottom:44px;}
+  .step-meta{
+    display:flex;align-items:center;gap:10px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;color:var(--text-faint);
+    text-transform:uppercase;letter-spacing:.08em;
+    margin-bottom:10px;
+  }
+  .step-meta .who{
+    color:var(--text-dim);
+    background:var(--surface);
+    border:1px solid var(--border);
+    padding:2px 9px;
+    border-radius:100px;
+    text-transform:none;
+    letter-spacing:0;
+    font-family:'Inter',sans-serif;
+    font-size:12px;
+  }
+  .step-title{
+    font-family:'Space Grotesk',sans-serif;
+    font-size:19px;
+    font-weight:500;
+    margin-bottom:8px;
+  }
+  .step-card{
+    background:var(--surface);
+    border:1px solid var(--border-soft);
+    border-radius:10px;
+    padding:16px 18px;
+  }
+  .step-row{display:flex;gap:10px;font-size:14px;}
+  .step-row + .step-row{margin-top:10px;padding-top:10px;border-top:1px solid var(--border-soft);}
+  .step-row .tag{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:10px;
+    text-transform:uppercase;
+    letter-spacing:.06em;
+    color:var(--text-faint);
+    width:64px;
+    flex-shrink:0;
+    padding-top:2px;
+  }
+  .step-row p{color:var(--text-dim);}
+  .step-row p b{color:var(--text);font-weight:500;}
+  .vital{
+    display:inline-block;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    color:var(--critical);
+    background:var(--critical-dim);
+    border-radius:4px;
+    padding:1px 6px;
+    margin:0 2px;
+  }
+
+  /* ---------- ARCHITECTURE ---------- */
+  .arch{
+    padding:56px 0 80px;
+    border-top:1px solid var(--border-soft);
+    margin-top:24px;
+  }
+  .arch-head{margin-bottom:28px;}
+  .arch-head h2{font-family:'Space Grotesk',sans-serif;font-weight:500;font-size:22px;}
+  .arch-head p{color:var(--text-dim);font-size:14px;margin-top:6px;max-width:520px;}
+  .arch-grid{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:1px;
+    background:var(--border-soft);
+    border:1px solid var(--border-soft);
+    border-radius:10px;
+    overflow:hidden;
+  }
+  .arch-cell{
+    background:var(--surface);
+    padding:20px 18px;
+  }
+  .arch-cell .num{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;color:var(--text-faint);
+    margin-bottom:14px;
+  }
+  .arch-cell h3{
+    font-family:'Space Grotesk',sans-serif;
+    font-size:15px;font-weight:500;
+    margin-bottom:6px;
+  }
+  .arch-cell p{font-size:12.5px;color:var(--text-dim);line-height:1.55;}
+
+  footer{
+    padding:32px 0 60px;
+    border-top:1px solid var(--border-soft);
+    display:flex;justify-content:space-between;align-items:center;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;color:var(--text-faint);
+    letter-spacing:.04em;
+  }
+
+  @media (max-width:640px){
+    h1{font-size:38px;}
+    .arch-grid{grid-template-columns:1fr 1fr;}
+    .step{grid-template-columns:40px 1fr;gap:16px;}
+    .step-index{width:36px;height:36px;font-size:11px;}
+  }
+
+  @media (prefers-reduced-motion:no-preference){
+    .ecg-line{
+      stroke-dasharray:900;
+      stroke-dashoffset:900;
+      animation:draw 3.2s ease-out forwards;
+    }
+    .ecg-dot{animation:blink 2.4s ease-in-out infinite;}
+  }
+  @keyframes draw{to{stroke-dashoffset:0;}}
+  @keyframes blink{0%,100%{opacity:.35;}50%{opacity:1;}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <section class="hero">
+    <div class="eyebrow">workflow walkthrough</div>
+    <h1>How <span>HospitalAI</span> catches a patient before the doctor does.</h1>
+    <p class="hero-sub">A human-in-the-loop clinical orchestration platform — tracking risk in real time, holding staff to response SLAs, and asking a person before it ever moves a patient.</p>
+
+    <div class="ecg-band">
+      <svg viewBox="0 0 860 74" preserveAspectRatio="none">
+        <path class="ecg-line" d="M0,40 L120,40 L140,40 L152,18 L164,58 L176,40 L300,40 L318,40 L330,10 L342,64 L352,40 L440,40"/>
+        <path class="ecg-line spike" d="M440,40 L456,40 L468,-4 L480,74 L492,20 L500,40 L560,40"/>
+        <path class="ecg-line" d="M560,40 L680,40 L696,40 L706,26 L716,48 L726,40 L860,40"/>
+        <circle class="ecg-dot" cx="852" cy="40" r="4"/>
+      </svg>
+    </div>
+  </section>
+
+  <section class="actors">
+    <div class="actor">
+      <div class="actor-dot">NS</div>
+      <div class="actor-label"><b>Nurse Sarah</b> — triage, general ward</div>
+    </div>
+    <div class="actor">
+      <div class="actor-dot">DC</div>
+      <div class="actor-label"><b>Dr. Chen</b> — attending physician</div>
+    </div>
+    <div class="actor">
+      <div class="actor-dot" style="border-color:var(--ai);color:var(--ai);">AI</div>
+      <div class="actor-label"><b>The Orchestrator</b> — recommends, never decides</div>
+    </div>
+  </section>
+
+  <section class="timeline">
+    <div class="timeline-head">
+      <h2>A rapidly deteriorating patient</h2>
+      <p>Six steps, one patient — John Doe, 65, admitted with breathing difficulty.</p>
+    </div>
+
+    <div class="step">
+      <div class="step-rail"><div class="step-index">01</div></div>
+      <div class="step-body">
+        <div class="step-meta"><span class="who">Nurse Sarah</span>patient admission</div>
+        <div class="step-title">John is admitted to the general ward</div>
+        <div class="step-card">
+          <div class="step-row"><span class="tag">action</span><p>Sarah opens the dashboard and admits John into a general ward bed.</p></div>
+          <div class="step-row"><span class="tag">system</span><p>The admission and initial vitals save instantly, and every active dashboard in the hospital updates <b>over WebSockets</b> — no refresh needed.</p></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-rail"><div class="step-index warning">02</div></div>
+      <div class="step-body">
+        <div class="step-meta"><span class="who">Nurse Sarah</span>vitals monitoring</div>
+        <div class="step-title">Two hours in, his numbers turn</div>
+        <div class="step-card">
+          <div class="step-row"><span class="tag">action</span><p>SpO2 falls to <span class="vital">84%</span>, heart rate climbs to <span class="vital">135 bpm</span>. Sarah logs both.</p></div>
+          <div class="step-row"><span class="tag">system</span><p>The <b>NEWS2 scoring engine</b> recalculates instantly — risk score jumps to <b>9</b>, status flips from stable to critical.</p></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-rail"><div class="step-index critical">03</div></div>
+      <div class="step-body">
+        <div class="step-meta"><span class="who">The system</span>SLA alert generation</div>
+        <div class="step-title">The clock starts</div>
+        <div class="step-card">
+          <div class="step-row"><span class="tag">action</span><p>The alerts engine fires a <b>CRITICAL_VITALS</b> alert the instant the score crosses the threshold.</p></div>
+          <div class="step-row"><span class="tag">system</span><p>A strict <b>5-minute SLA</b> attaches to the alert. Every doctor on shift gets it in their notification tray.</p></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-rail"><div class="step-index warning">04</div></div>
+      <div class="step-body">
+        <div class="step-meta"><span class="who">Dr. Chen</span>response center</div>
+        <div class="step-title">Someone has to answer before the timer does</div>
+        <div class="step-card">
+          <div class="step-row"><span class="tag">action</span><p>Dr. Chen sees the alert flashing on the Kanban board and clicks <b>Acknowledge</b> with time to spare.</p></div>
+          <div class="step-row"><span class="tag">system</span><p>The SLA timer stops. Had it lapsed, a <b>background escalation worker</b> — running every 60 seconds — would have pushed this straight to the Chief Medical Officer.</p></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-rail"><div class="step-index ai">05</div></div>
+      <div class="step-body">
+        <div class="step-meta"><span class="who">The Orchestrator</span>AI recommendation</div>
+        <div class="step-title">The AI proposes a move — it can't make one</div>
+        <div class="step-card">
+          <div class="step-row"><span class="tag">action</span><p>Now that John is critical, the Orchestrator scans live bed telemetry across the hospital.</p></div>
+          <div class="step-row"><span class="tag">system</span><p>It finds <b>ICU Bed 12</b> open and generates a relocation recommendation, with its clinical reasoning attached — SpO2 below 85% needs ventilation.</p></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-rail"><div class="step-index stable">06</div></div>
+      <div class="step-body">
+        <div class="step-meta"><span class="who">Dr. Chen</span>human-in-the-loop approval</div>
+        <div class="step-title">A person signs off, and only then does anything move</div>
+        <div class="step-card">
+          <div class="step-row"><span class="tag">action</span><p>The recommendation sits <b>pending</b> on the Action Center. Dr. Chen reviews the reasoning and clicks <b>Approve</b>.</p></div>
+          <div class="step-row"><span class="tag">system</span><p>The database transaction runs — John is reassigned to the ICU bed, and hospital-wide capacity updates live for everyone watching.</p></div>
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+  <section class="arch">
+    <div class="arch-head">
+      <h2>What's running underneath</h2>
+      <p>Four pieces, each doing one job, wired together in real time.</p>
+    </div>
+    <div class="arch-grid">
+      <div class="arch-cell">
+        <div class="num">01</div>
+        <h3>PostgreSQL</h3>
+        <p>Source of truth for every bed, patient, score, and audit log.</p>
+      </div>
+      <div class="arch-cell">
+        <div class="num">02</div>
+        <h3>FastAPI</h3>
+        <p>Calculates scores, evaluates recommendations, runs the escalation worker.</p>
+      </div>
+      <div class="arch-cell">
+        <div class="num">03</div>
+        <h3>WebSockets</h3>
+        <p>A persistent link that pushes every decision to the browser the instant it happens.</p>
+      </div>
+      <div class="arch-cell">
+        <div class="num">04</div>
+        <h3>Next.js</h3>
+        <p>The Kanban boards, patient dossiers, and response centers people actually touch.</p>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <span>HospitalAI — operations command center</span>
+    <span>HITL clinical orchestration</span>
+  </footer>
+
+</div>
+
+</body>
+</html>
