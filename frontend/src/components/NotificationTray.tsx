@@ -32,7 +32,7 @@ export default function NotificationTray() {
   }, [user]);
 
   // WebSocket listener
-  const wsUrl = typeof window !== "undefined" && user ? `ws://${window.location.hostname}:8000/ws/dashboard` : "";
+  const wsUrl = typeof window !== "undefined" && user ? `ws://localhost:8000/ws/dashboard` : "";
   useWebSocket(wsUrl, (payload) => {
     if (payload.type === "NOTIFICATION_CREATED") {
       setNotifications((prev) => [payload.data, ...prev]);

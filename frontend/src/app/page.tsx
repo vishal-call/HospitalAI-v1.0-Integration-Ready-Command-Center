@@ -126,7 +126,7 @@ export default function DashboardPage() {
   }, [user]);
 
   // WebSockets Live Listener - Binds streams directly into local React state arrays
-  const wsUrl = typeof window !== "undefined" && user ? `ws://${window.location.hostname}:8000/ws/dashboard` : "";
+  const wsUrl = typeof window !== "undefined" && user ? `ws://localhost:8000/ws/dashboard` : "";
   const { connected: wsConnected, metrics: wsMetrics } = useWebSocket(
     wsUrl,
     (payload) => {

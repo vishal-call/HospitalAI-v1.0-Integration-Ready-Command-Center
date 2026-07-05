@@ -144,7 +144,7 @@ app.add_middleware(RequestLoggingMiddleware)
 # Configure CORS for next.js frontend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000", "http://172.21.128.1:3000"],  # Next.js local port
+    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000", "http://172.21.128.1:3000", "http://localhost:3001", "http://127.0.0.1:3001"],  # Next.js local port
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -301,14 +301,13 @@ async def startup_event():
             
     logger.info("Application startup complete. Live dashboard broadcaster initialized.")
 
-@app.get("/health")
+@app.get("/")
+async def root():
+    return {"message": "Welcome to HospitalAI API v1.0 (Integration Ready)"}
+
+@app.get("/api/health")
 async def health_check():
-    return {
-        "status": "healthy",
-        "service": "HospitalAI API Backend",
-        "database": "PostgreSQL",
-        "realtime_ws": "/ws/dashboard"
-    }
+    return {"status": "ok", "service": "HospitalAI"}
 
 # --- REST Endpoints ---
 

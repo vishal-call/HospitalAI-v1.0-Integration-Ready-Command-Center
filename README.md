@@ -39,8 +39,11 @@ npm run dev
 Once all three steps are running, open your browser and navigate to:
 **http://localhost:3000**
 
-You can log in using the seed accounts (e.g., `admin@hospital.local` / `securepassword123` or `doctor1@hospital.local` / `securepassword123`).
-
+You can log in using the seed accounts:
+- **Coordinator:** `coord@hospitalai.com` / `password123`
+- **Doctor:** `doctor@hospitalai.com` / `password123`
+- **Nurse:** `nurse@hospitalai.com` / `password123`
+- **Admin:** `admin@hospitalai.com` / `password123`
 ## Troubleshooting
 - **Database Connection Refused:** Ensure Step 1 is running. If WSL shuts down, the Windows backend cannot connect to `127.0.0.1:5432`.
 - **WebSocket Errors:** The frontend dynamically targets your IP to connect to the backend's WebSocket. Ensure the backend is running without errors.

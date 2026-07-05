@@ -38,7 +38,8 @@ async def seed_data(db: Optional[AsyncSession] = None, clear_only: bool = False)
                     logger.warning(f"Could not terminate other DB connections: {e}")
                     
                 logger.info("Dropping existing tables...")
-                await conn.run_sync(Base.metadata.drop_all)
+                await conn.execute(text("DROP SCHEMA public CASCADE"))
+                await conn.execute(text("CREATE SCHEMA public"))
                 logger.info("Creating tables...")
                 await conn.run_sync(Base.metadata.create_all)
     else:

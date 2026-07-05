@@ -40,7 +40,7 @@ export default function PatientDetailsPage() {
   }, [id]);
 
   // Listen for WebSocket updates to this patient's vitals
-  const wsUrl = typeof window !== "undefined" ? `ws://${window.location.hostname}:8000/ws/dashboard` : "";
+  const wsUrl = typeof window !== "undefined" ? `ws://localhost:8000/ws/dashboard` : "";
   useWebSocket(wsUrl, (payload) => {
     if (payload.type === "PATIENT_UPDATED" && payload.data.patient_id === id) {
       loadPatient(); // reload to get the new score explanation

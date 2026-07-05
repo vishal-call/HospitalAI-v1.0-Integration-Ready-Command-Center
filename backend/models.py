@@ -600,6 +600,7 @@ class IntegrationLog(Base):
     finished_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
     duration_ms: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
     correlation_id: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+    idempotency_key: Mapped[Optional[str]] = mapped_column(String(200), index=True, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
 
 
