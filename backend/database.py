@@ -16,44 +16,12 @@ def get_database_url() -> str:
     if env_url:
         return env_url
     
-    # 2. Check if WSL_IP is injected into environment
-    wsl_ip = os.getenv("WSL_IP")
-    if wsl_ip:
-        logger.info(f"Using environment WSL_IP for PostgreSQL: {wsl_ip}")
-        return f"postgresql+asyncpg://postgres:postgres@{wsl_ip}:5432/hospitalai"
+    # 2. Check if running inside WSL itself
+    if os.path.exists("/proc/version"):
+        return "postgresql+asyncpg://postgres:postgres@127.0.0.1:5433/hospitalai"
         
-    # 2.5. Check if a local cached wsl_ip.txt file exists to avoid subprocess hangs
-    base_dir = os.path.dirname(os.path.abspath(__file__))
-    wsl_ip_path = os.path.join(base_dir, "wsl_ip.txt")
-    if os.path.exists(wsl_ip_path):
-        try:
-            with open(wsl_ip_path, "rb") as f:
-                content = f.read()
-            encoding = "utf-16" if b'\x00' in content else "utf-8"
-            ip_str = content.decode(encoding, errors='ignore').strip()
-            parts = ip_str.split()
-            if parts:
-                wsl_ip = parts[0]
-                logger.info(f"Using pre-resolved WSL IP from wsl_ip.txt: {wsl_ip}")
-                return f"postgresql+asyncpg://postgres:postgres@{wsl_ip}:5432/hospitalai"
-        except Exception as e:
-            logger.warning(f"Failed to read pre-resolved wsl_ip.txt at {wsl_ip_path}: {e}")
-            
-    # 3. Dynamic resolution fallback if running standalone (prefer IPv4 loopback 127.0.0.1)
-    host = "127.0.0.1"
-    if os.name == "nt":
-        try:
-            # Query WSL network bridge IP with a generous timeout to prevent cold-start bottlenecks
-            res = subprocess.run(["wsl", "hostname", "-I"], capture_output=True, text=True, timeout=5.0)
-            if res.returncode == 0:
-                ip_list = res.stdout.strip().split()
-                if ip_list:
-                    host = ip_list[0]
-                    logger.info(f"Resolved WSL IP dynamically: {host}")
-        except Exception as e:
-            logger.warning(f"Failed to dynamically resolve WSL IP, falling back to 127.0.0.1: {e}")
-            
-    return f"postgresql+asyncpg://postgres:postgres@{host}:5432/hospitalai"
+    # 3. Running on Windows Host, connect to the proxy on loopback 127.0.0.1:5432
+    return "postgresql+asyncpg://postgres:postgres@127.0.0.1:5432/hospitalai"
 
 DATABASE_URL = get_database_url()
 

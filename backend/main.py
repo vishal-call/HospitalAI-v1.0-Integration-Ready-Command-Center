@@ -283,21 +283,35 @@ async def startup_event():
     from sqlalchemy import select
     import models
     from services.sla_service import seed_default_sla_policies
-    async with AsyncSessionLocal() as db:
-        res = await db.execute(select(models.ScoringPolicy).where(models.ScoringPolicy.is_active == True))
-        active_policy = res.scalar_one_or_none()
-        if not active_policy:
-            default_policy = models.ScoringPolicy(
-                name="NEWS2-Adult-Standard",
-                version="v1.0",
-                config_json={},
-                is_active=True
-            )
-            db.add(default_policy)
-            await db.commit()
-            logger.info("Seeded default active ScoringPolicy: NEWS2-Adult-Standard v1.0")
-            
-        await seed_default_sla_policies(db)
+    from tenacity import AsyncRetrying, stop_after_attempt, wait_fixed
+    
+    logger.info("Starting database connectivity check and default configuration seeding...")
+    
+    try:
+        async for attempt in AsyncRetrying(
+            stop=stop_after_attempt(10),
+            wait=wait_fixed(1.5),
+            reraise=True
+        ):
+            with attempt:
+                async with AsyncSessionLocal() as db:
+                    res = await db.execute(select(models.ScoringPolicy).where(models.ScoringPolicy.is_active == True))
+                    active_policy = res.scalar_one_or_none()
+                    if not active_policy:
+                        default_policy = models.ScoringPolicy(
+                            name="NEWS2-Adult-Standard",
+                            version="v1.0",
+                            config_json={},
+                            is_active=True
+                        )
+                        db.add(default_policy)
+                        await db.commit()
+                        logger.info("Seeded default active ScoringPolicy: NEWS2-Adult-Standard v1.0")
+                        
+                    await seed_default_sla_policies(db)
+    except Exception as e:
+        logger.error(f"Critical error: Failed to connect to database after 10 attempts during startup: {e}")
+        raise e
             
     logger.info("Application startup complete. Live dashboard broadcaster initialized.")
 
