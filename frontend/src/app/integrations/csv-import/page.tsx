@@ -2,11 +2,13 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
-import { Upload, FileText, Activity, AlertCircle, CheckCircle2, ChevronRight, Loader2, ArrowLeft } from "lucide-react";
+import { Upload, FileText, Activity, AlertCircle, CheckCircle2, ChevronRight, Loader2, ArrowLeft, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import { previewCsvImport, commitCsvImport, CsvPreviewResponse, CsvCommitResponse } from "@/lib/api";
 
-export default function CsvImportPage() {
+import { Suspense } from "react";
+
+function CsvImportPageContent() {
   const searchParams = useSearchParams();
   const initialType = searchParams?.get("type") === "vitals" ? "vitals" : "patients";
   
@@ -302,4 +304,12 @@ export default function CsvImportPage() {
 // Needed because ShieldCheck is not exported by default from lucide-react if not added above.
 function ShieldCheckIcon(props: any) {
     return <ShieldCheck {...props} />;
+}
+
+export default function CsvImportPage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-slate-400">Loading import engine...</div>}>
+      <CsvImportPageContent />
+    </Suspense>
+  );
 }

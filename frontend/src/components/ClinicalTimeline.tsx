@@ -112,36 +112,36 @@ export default function ClinicalTimeline({ patientId }: ClinicalTimelineProps) {
           <p className="text-slate-400 text-sm leading-relaxed mb-3">{evt.description}</p>
           
           {/* Metadata Block */}
-          {evt.event_metadata && Object.keys(evt.event_metadata).length > 0 && (
+          {evt.event_metadata && Object.keys(evt.event_metadata as any).length > 0 && (
             <div className="bg-slate-950/50 rounded-lg p-3 border border-slate-800/50">
-              {evt.event_type === "VITALS_RECORDED" && evt.event_metadata?.vitals && (
+              {evt.event_type === "VITALS_RECORDED" && (evt.event_metadata as any)?.vitals && (
                 <div className="flex gap-4">
                   <div className="flex flex-col">
                     <span className="text-[10px] text-slate-500 uppercase tracking-wider font-bold">Heart Rate</span>
-                    <span className="text-sky-400 font-mono text-sm">{evt.event_metadata?.vitals?.hr} bpm</span>
+                    <span className="text-sky-400 font-mono text-sm">{(evt.event_metadata as any)?.vitals?.hr} bpm</span>
                   </div>
                   <div className="flex flex-col">
                     <span className="text-[10px] text-slate-500 uppercase tracking-wider font-bold">SpO2</span>
-                    <span className="text-emerald-400 font-mono text-sm">{evt.event_metadata?.vitals?.spo2}%</span>
+                    <span className="text-emerald-400 font-mono text-sm">{(evt.event_metadata as any)?.vitals?.spo2}%</span>
                   </div>
                   <div className="flex flex-col">
                     <span className="text-[10px] text-slate-500 uppercase tracking-wider font-bold">EWS Score</span>
-                    <span className="text-amber-400 font-mono text-sm">{evt.event_metadata?.new_score?.toFixed(1)}</span>
+                    <span className="text-amber-400 font-mono text-sm">{(evt.event_metadata as any)?.new_score?.toFixed(1)}</span>
                   </div>
                 </div>
               )}
 
-              {evt.event_type === "RECOMMENDATION_REJECTED" && evt.event_metadata?.override_reason && (
+              {evt.event_type === "RECOMMENDATION_REJECTED" && (evt.event_metadata as any)?.override_reason && (
                 <div className="flex flex-col">
                   <span className="text-[10px] text-slate-500 uppercase tracking-wider font-bold mb-1">Override Reason</span>
-                  <span className="text-rose-300/80 text-xs italic">"{evt.event_metadata?.override_reason}"</span>
+                  <span className="text-rose-300/80 text-xs italic">"{(evt.event_metadata as any)?.override_reason}"</span>
                 </div>
               )}
 
               {/* Generic Fallback for other metadata */}
               {evt.event_type !== "VITALS_RECORDED" && evt.event_type !== "RECOMMENDATION_REJECTED" && (
                 <div className="flex flex-wrap gap-x-4 gap-y-2">
-                  {Object.entries(evt.event_metadata).map(([key, val]) => {
+                  {Object.entries(evt.event_metadata as any).map(([key, val]) => {
                     if (typeof val === 'object') return null;
                     return (
                       <div key={key} className="flex gap-1.5 items-center">

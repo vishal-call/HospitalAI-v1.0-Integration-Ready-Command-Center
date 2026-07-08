@@ -37,7 +37,7 @@ export default function ResponseCenterPage() {
 
   // WebSocket for Immutable Updates
   const wsUrl = typeof window !== "undefined" && user ? `ws://localhost:8000/ws/dashboard` : "";
-  useWebSocket(wsUrl, (payload) => {
+  useWebSocket(wsUrl, (payload: any) => {
     if (["ALERT_ACKNOWLEDGED", "ALERT_RESOLVED", "ALERT_ESCALATED", "SLA_BREACHED"].includes(payload.type)) {
       setAlerts((prev) => {
         // If it's resolved/dismissed, we can remove it or keep it in a terminal state

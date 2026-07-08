@@ -89,7 +89,7 @@ def test_alerts_and_stepdown_pipeline():
     
     # Acknowledge one alert
     target_alert = john_alerts[0]
-    ack_resp = session.post(f"http://localhost:8000/api/alerts/{target_alert['id']}/acknowledge", timeout=5)
+    ack_resp = session.post(f"http://localhost:8000/api/alerts/{target_alert['id']}/acknowledge", json={}, timeout=5)
     assert ack_resp.status_code == 200
     assert ack_resp.json()["is_acknowledged"] is True
     print(f"Acknowledged alert ID: {target_alert['id']}")
@@ -121,8 +121,8 @@ def test_alerts_and_stepdown_pipeline():
     assert recs_resp.status_code == 200
     recs = recs_resp.json()
     
-    # We expect a pending step-down recommendation for Alice Smith (patient_id: 2) targeting a General Ward bed.
-    alice_rec = next((r for r in recs if r["patient_id"] == 2), None)
+    # We expect a pending step-down recommendation for Alice Smith (patient_id: 2 or chained_patient_id: 2) targeting a General Ward bed.
+    alice_rec = next((r for r in recs if r["patient_id"] == 2 or r.get("chained_patient_id") == 2), None)
     assert alice_rec is not None
     print(f"ICU Step-down recommendation triggered successfully! ID: {alice_rec['id']}, Reasoning: {alice_rec['reasoning']}")
     

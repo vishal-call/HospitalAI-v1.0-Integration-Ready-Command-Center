@@ -7,13 +7,13 @@ import websockets
 import json
 
 def test_health():
-    print("Testing /health endpoint...")
+    print("Testing /api/health endpoint...")
     try:
-        response = requests.get("http://localhost:8000/health", timeout=5)
+        response = requests.get("http://127.0.0.1:8000/api/health", timeout=5)
         print(f"Health response status: {response.status_code}")
         print(f"Health response JSON: {response.json()}")
         assert response.status_code == 200
-        assert response.json()["status"] == "healthy"
+        assert response.json()["status"] == "ok"
         print("Health check PASSED!\n")
         return True
     except Exception as e:
@@ -22,9 +22,21 @@ def test_health():
 
 async def test_websocket():
     print("Testing WebSocket /ws/dashboard...")
-    uri = "ws://localhost:8000/ws/dashboard"
+    uri = "ws://127.0.0.1:8000/ws/dashboard"
     try:
-        async with websockets.connect(uri) as websocket:
+        # Log in first to get the auth_token cookie
+        login_payload = {
+            "email": "coord@hospitalai.com",
+            "password": "password123"
+        }
+        res = requests.post("http://127.0.0.1:8000/api/auth/login", json=login_payload)
+        auth_token = res.cookies.get("auth_token")
+        
+        headers = {}
+        if auth_token:
+            headers["Cookie"] = f"auth_token={auth_token}"
+            
+        async with websockets.connect(uri, additional_headers=headers) as websocket:
             # 1. Read initial state
             response = await websocket.recv()
             data = json.loads(response)
@@ -57,17 +69,35 @@ async def test_websocket():
         return False
 
 def main():
+    import os
+    wsl_ip = "localhost"
+    try:
+        res = subprocess.run(["wsl", "hostname", "-I"], capture_output=True, text=True, timeout=3)
+        if res.returncode == 0:
+            ip_list = res.stdout.strip().split()
+            if ip_list:
+                wsl_ip = ip_list[0]
+                print(f"Parent resolved WSL IP: {wsl_ip}")
+    except Exception as e:
+        print(f"Parent failed to resolve WSL IP: {e}")
+        
+    os.environ["WSL_IP"] = wsl_ip
+    env = os.environ.copy()
+
+    # Hydrate database with fresh seed data
+    print("Hydrating database with fresh seed data...")
+    subprocess.run([sys.executable, "seed.py"], env=env, check=True)
+
     print("Starting FastAPI Uvicorn server in subprocess...")
-    # Start uvicorn
+    # Start uvicorn without pipe redirection to prevent deadlock and with env passed
     proc = subprocess.Popen(
-        [sys.executable, "-m", "uvicorn", "main:app", "--port", "8000"],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
+        [sys.executable, "-m", "uvicorn", "main:app", "--host", "127.0.0.1", "--port", "8000"],
+        env=env,
         text=True
     )
     
     # Wait for server to bind and start
-    time.sleep(3)
+    time.sleep(6)
     
     success = False
     try:

@@ -50,3 +50,8 @@ env/
 # OS
 .DS_Store
 Thumbs.db
+
+# Local development files
+wsl_ip.txt
+backend/wsl_ip.txt
+

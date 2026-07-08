@@ -33,7 +33,7 @@ export default function NotificationTray() {
 
   // WebSocket listener
   const wsUrl = typeof window !== "undefined" && user ? `ws://localhost:8000/ws/dashboard` : "";
-  useWebSocket(wsUrl, (payload) => {
+  useWebSocket(wsUrl, (payload: any) => {
     if (payload.type === "NOTIFICATION_CREATED") {
       setNotifications((prev) => [payload.data, ...prev]);
       // Trigger animation

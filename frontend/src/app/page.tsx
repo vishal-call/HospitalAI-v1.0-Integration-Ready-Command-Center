@@ -129,7 +129,7 @@ export default function DashboardPage() {
   const wsUrl = typeof window !== "undefined" && user ? `ws://localhost:8000/ws/dashboard` : "";
   const { connected: wsConnected, metrics: wsMetrics } = useWebSocket(
     wsUrl,
-    (payload) => {
+    (payload: any) => {
       console.log(`WebSocket event stream received: ${payload.type}`, payload);
 
       if (payload.type === "PATIENT_ADMITTED") {
@@ -279,7 +279,7 @@ export default function DashboardPage() {
       {/* Background Gradient Ornaments */}
       <div className="absolute top-0 left-0 w-full h-[600px] bg-radial-gradient from-indigo-900/10 via-slate-950/0 to-slate-950/0 pointer-events-none" />
       {/* Main Dashboard Workspace */}
-      <div className="flex-1 max-w-7xl w-full mx-auto p-6 md:p-8 space-y-8">
+      <div className="flex flex-col space-y-12 p-6 flex-1 max-w-7xl w-full mx-auto">
         
         {/* Page Actions */}
         <div className="flex justify-end items-center gap-4">
@@ -300,105 +300,6 @@ export default function DashboardPage() {
           </button>
         </div>
         
-        {/* KPI Cards section */}
-        <section className="grid grid-cols-2 md:grid-cols-4 gap-6">
-          <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-5 backdrop-blur-xl">
-            <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider flex items-center gap-1.5">
-              <Heart className="h-3.5 w-3.5 text-emerald-400" />
-              Patient Census
-            </span>
-            <div className="text-3xl font-extrabold text-white mt-2 tracking-tight flex items-baseline gap-2">
-              {totalPatients}
-              <span className="text-xs font-normal text-slate-500">
-                ({criticalCount}c / {seriousCount}s / {stableCount}st)
-              </span>
-            </div>
-            <p className="text-xs text-slate-500 font-medium mt-1">Active bed placement sessions</p>
-          </div>
-
-          <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-5 backdrop-blur-xl">
-            <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider flex items-center gap-1.5">
-              <Layers className="h-3.5 w-3.5 text-indigo-400" />
-              Beds Available
-            </span>
-            <div className="text-3xl font-extrabold text-white mt-2 tracking-tight">
-              {availableBedsCount}
-            </div>
-            <p className="text-xs text-slate-500 font-medium mt-1">Vacant emergency/ward spaces</p>
-          </div>
-
-          <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-5 backdrop-blur-xl">
-            <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider flex items-center gap-1.5">
-              <ShieldAlert className="h-3.5 w-3.5 text-rose-450" />
-              ICU Utilization
-            </span>
-            <div className="text-3xl font-extrabold text-rose-400 mt-2 tracking-tight">
-              {icuOccupancyRate}%
-            </div>
-            <p className="text-xs text-rose-500/80 font-medium mt-1">Requires critical triage monitoring</p>
-          </div>
-
-          <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-5 backdrop-blur-xl">
-            <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider flex items-center gap-1.5">
-              <AlertOctagon className="h-3.5 w-3.5 text-amber-400 animate-pulse" />
-              Active Alert Feed
-            </span>
-            <div className="text-3xl font-extrabold text-amber-400 mt-2 tracking-tight">
-              {activeAlertsCount}
-            </div>
-            <p className="text-xs text-amber-500/80 font-medium mt-1">Requires Human-in-the-Loop review</p>
-          </div>
-        </section>
-
-        {/* Analytics Charts Panel */}
-        {!loading && (
-          <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* EWS Distribution Graph */}
-            <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 backdrop-blur-xl">
-              <h3 className="text-sm font-bold text-white mb-4">Patient Criticality EWS Distribution</h3>
-              <div className="h-64">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={ewsDistribution}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
-                    <XAxis dataKey="status" stroke="#94a3b8" fontSize={11} />
-                    <YAxis stroke="#94a3b8" fontSize={11} allowDecimals={false} />
-                    <Tooltip contentStyle={{ backgroundColor: "#0f172a", borderColor: "#334155", color: "#f8fafc" }} />
-                    <Bar dataKey="count" fill="#6366f1" radius={[4, 4, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-
-            {/* Occupancy Trends Graph */}
-            <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 backdrop-blur-xl">
-              <h3 className="text-sm font-bold text-white mb-4">24-Hour Ward Occupancy Trends</h3>
-              <div className="h-64">
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={occupancyHistory}>
-                    <defs>
-                      <linearGradient id="colorIcu" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#f43f5e" stopOpacity={0.2}/>
-                        <stop offset="95%" stopColor="#f43f5e" stopOpacity={0}/>
-                      </linearGradient>
-                      <linearGradient id="colorEmergency" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.2}/>
-                        <stop offset="95%" stopColor="#f59e0b" stopOpacity={0}/>
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
-                    <XAxis dataKey="name" stroke="#94a3b8" fontSize={11} />
-                    <YAxis stroke="#94a3b8" fontSize={11} />
-                    <Tooltip contentStyle={{ backgroundColor: "#0f172a", borderColor: "#334155", color: "#f8fafc" }} />
-                    <Legend verticalAlign="top" height={36} />
-                    <Area type="monotone" dataKey="ICU" stroke="#f43f5e" fillOpacity={1} fill="url(#colorIcu)" strokeWidth={2} />
-                    <Area type="monotone" dataKey="Emergency" stroke="#f59e0b" fillOpacity={1} fill="url(#colorEmergency)" strokeWidth={2} />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-          </section>
-        )}
-
         {loading ? (
           <div className="py-20 flex flex-col items-center justify-center gap-4 text-slate-400">
             <RefreshCw className="h-8 w-8 animate-spin text-indigo-400" />
@@ -413,56 +314,163 @@ export default function DashboardPage() {
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-            {/* Main Content Pane */}
-            <div className="lg:col-span-8 space-y-8">
-              {/* Wards Telemetry section */}
-              <section className="space-y-4">
-                <h2 className="text-lg font-bold text-slate-200 tracking-tight flex items-center gap-2">
-                  <Radio className="h-4 w-4 text-indigo-400 animate-pulse" />
-                  Hospital Ward Utilization Overview
-                </h2>
+          <>
+            {/* Section 1: Executive Overview */}
+            <section>
+              <h2 className="text-2xl font-bold mb-6">Executive Overview</h2>
+              
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-5 backdrop-blur-xl">
+                  <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider flex items-center gap-1.5">
+                    <Heart className="h-3.5 w-3.5 text-emerald-400" />
+                    Patient Census
+                  </span>
+                  <div className="text-3xl font-extrabold text-white mt-2 tracking-tight flex items-baseline gap-2">
+                    {totalPatients}
+                    <span className="text-xs font-normal text-slate-500">
+                      ({criticalCount}c / {seriousCount}s / {stableCount}st)
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-500 font-medium mt-1">Active bed placement sessions</p>
+                </div>
+
+                <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-5 backdrop-blur-xl">
+                  <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider flex items-center gap-1.5">
+                    <Layers className="h-3.5 w-3.5 text-indigo-400" />
+                    Beds Available
+                  </span>
+                  <div className="text-3xl font-extrabold text-white mt-2 tracking-tight">
+                    {availableBedsCount}
+                  </div>
+                  <p className="text-xs text-slate-500 font-medium mt-1">Vacant emergency/ward spaces</p>
+                </div>
+
+                <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-5 backdrop-blur-xl">
+                  <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider flex items-center gap-1.5">
+                    <ShieldAlert className="h-3.5 w-3.5 text-rose-450" />
+                    ICU Utilization
+                  </span>
+                  <div className="text-3xl font-extrabold text-rose-400 mt-2 tracking-tight">
+                    {icuOccupancyRate}%
+                  </div>
+                  <p className="text-xs text-rose-500/80 font-medium mt-1">Requires critical triage monitoring</p>
+                </div>
+
+                <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-5 backdrop-blur-xl">
+                  <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider flex items-center gap-1.5">
+                    <AlertOctagon className="h-3.5 w-3.5 text-amber-400 animate-pulse" />
+                    Active Alert Feed
+                  </span>
+                  <div className="text-3xl font-extrabold text-amber-400 mt-2 tracking-tight">
+                    {activeAlertsCount}
+                  </div>
+                  <p className="text-xs text-amber-500/80 font-medium mt-1">Requires Human-in-the-Loop review</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 backdrop-blur-xl">
+                  <h3 className="text-sm font-bold text-white mb-4">Patient Criticality EWS Distribution</h3>
+                  <div className="h-64">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={ewsDistribution}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
+                        <XAxis dataKey="status" stroke="#94a3b8" fontSize={11} />
+                        <YAxis stroke="#94a3b8" fontSize={11} allowDecimals={false} />
+                        <Tooltip contentStyle={{ backgroundColor: "#0f172a", borderColor: "#334155", color: "#f8fafc" }} />
+                        <Bar dataKey="count" fill="#6366f1" radius={[4, 4, 0, 0]} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+
+                <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 backdrop-blur-xl">
+                  <h3 className="text-sm font-bold text-white mb-4">24-Hour Ward Occupancy Trends</h3>
+                  <div className="h-64">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <AreaChart data={occupancyHistory}>
+                        <defs>
+                          <linearGradient id="colorIcu" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="#f43f5e" stopOpacity={0.2}/>
+                            <stop offset="95%" stopColor="#f43f5e" stopOpacity={0}/>
+                          </linearGradient>
+                          <linearGradient id="colorEmergency" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.2}/>
+                            <stop offset="95%" stopColor="#f59e0b" stopOpacity={0}/>
+                          </linearGradient>
+                        </defs>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
+                        <XAxis dataKey="name" stroke="#94a3b8" fontSize={11} />
+                        <YAxis stroke="#94a3b8" fontSize={11} />
+                        <Tooltip contentStyle={{ backgroundColor: "#0f172a", borderColor: "#334155", color: "#f8fafc" }} />
+                        <Legend verticalAlign="top" height={36} />
+                        <Area type="monotone" dataKey="ICU" stroke="#f43f5e" fillOpacity={1} fill="url(#colorIcu)" strokeWidth={2} />
+                        <Area type="monotone" dataKey="Emergency" stroke="#f59e0b" fillOpacity={1} fill="url(#colorEmergency)" strokeWidth={2} />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            {/* Section 2: Detailed Resource Utilization */}
+            <section>
+              <h2 className="text-2xl font-bold mb-6">Detailed Resource Utilization</h2>
+              <div className="w-full">
                 <ErrorBoundary title="Ward Overview Telemetry">
                   <WardOverview wards={wards} onBedUpdate={loadData} />
                 </ErrorBoundary>
-              </section>
+              </div>
+            </section>
 
-              {/* Partner Network Status section */}
-              <section className="space-y-4">
+            {/* Section 3: Patient Admittance & Network Data */}
+            <section>
+              <h2 className="text-2xl font-bold mb-6">Patient Admittance & Network Data</h2>
+              <div className="flex flex-col space-y-6">
                 <ErrorBoundary title="Partner Network Status">
                   <PartnerNetwork hospitals={partnerHospitals} />
                 </ErrorBoundary>
-              </section>
-
-              {/* Patients list section */}
-              <section className="space-y-4">
                 <ErrorBoundary title="Patient Records Registry">
                   <PatientTable patients={patients} onVitalsLogged={loadData} />
                 </ErrorBoundary>
-              </section>
-            </div>
+              </div>
+            </section>
 
-            {/* Action Center Sidebar Pane */}
-            <div className="lg:col-span-4 lg:sticky lg:top-24 space-y-8">
-              <ErrorBoundary title="Active Deterioration Alerts">
-                <AlertFeed 
-                  alerts={alerts}
-                  onAcknowledgeComplete={loadData}
-                  acknowledgeAlert={acknowledgeAlert}
-                />
-              </ErrorBoundary>
-              
-              <ErrorBoundary title="HITL Relocation Actions">
-                <ActionCenter 
-                  recommendations={recommendations}
-                  onActionComplete={loadData}
-                  actionRecommendation={actionRecommendation}
-                  activeUserId={user.id}
-                  userRole={user.role}
-                />
-              </ErrorBoundary>
-            </div>
-          </div>
+            {/* Section 4: Active Alert Response Center */}
+            <section>
+              <h2 className="text-2xl font-bold mb-6">Active Alert Response Center</h2>
+              <div className="w-full">
+                <ErrorBoundary title="Active Deterioration Alerts">
+                  <AlertFeed 
+                    alerts={alerts}
+                    onAcknowledgeComplete={loadData}
+                    acknowledgeAlert={acknowledgeAlert}
+                  />
+                </ErrorBoundary>
+              </div>
+            </section>
+
+            {/* Section 5: Advanced Controls & Configuration */}
+            <section>
+              <h2 className="text-2xl font-bold mb-6">Advanced Controls & Configuration</h2>
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <div className="lg:col-span-8 rounded-2xl border border-slate-800 bg-slate-900/40 p-6 backdrop-blur-xl flex items-center justify-center min-h-[300px]">
+                  <p className="text-slate-500 font-semibold uppercase tracking-wider text-sm">Configuration Area Placeholder</p>
+                </div>
+                <div className="lg:col-span-4">
+                  <ErrorBoundary title="HITL Relocation Actions">
+                    <ActionCenter 
+                      recommendations={recommendations}
+                      onActionComplete={loadData}
+                      actionRecommendation={actionRecommendation}
+                      activeUserId={user.id}
+                      userRole={user.role}
+                    />
+                  </ErrorBoundary>
+                </div>
+              </div>
+            </section>
+          </>
         )}
       </div>
 

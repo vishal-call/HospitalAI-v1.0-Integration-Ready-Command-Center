@@ -32,7 +32,7 @@ export default function ScenariosPage() {
   const handleTrigger = async (scenarioId: string) => {
     try {
       setLoadingScenario(scenarioId);
-      const res = await triggerScenario(scenarioId);
+      const res: any = await triggerScenario(scenarioId);
       showToast("success", res.message || "Scenario executed successfully.");
     } catch (err: any) {
       showToast("error", err.message || "Failed to trigger scenario.");

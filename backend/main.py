@@ -350,8 +350,10 @@ async def admit_patient(
     vitals = {"heart_rate": hr, "resp_rate": rr, "spo2": spo2}
     
     from services.orchestrator import evaluate_patient_and_recommend
+    from services.scoring.policy_service import get_active_policy
     
-    shadow_mode_enabled = policy.config_json.get("shadow_mode_enabled", False)
+    policy = await get_active_policy(db)
+    shadow_mode_enabled = policy.config_json.get("shadow_mode_enabled", False) if policy else False
     rec = await evaluate_patient_and_recommend(db, patient, vitals, shadow_mode_enabled=shadow_mode_enabled)
     
     # 2. Broadcast the admission update via WebSockets
