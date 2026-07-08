@@ -176,8 +176,8 @@ export default function PatientTable({ patients, onVitalsLogged }: PatientTableP
                 </td>
               </tr>
             ) : (
-              sortedPatients.map((patient) => (
-                <React.Fragment key={patient.id}>
+              sortedPatients.map((patient, index) => (
+                <React.Fragment key={`${patient.id}-${index}`}>
                   <tr className="transition-colors hover:bg-slate-800/30">
                     <td className="py-4 px-6 font-semibold text-slate-100">{patient.name}</td>
                     <td className="py-4 px-6">
