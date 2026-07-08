@@ -4,20 +4,20 @@ echo       Starting HospitalAI Command Center
 echo ===================================================
 
 echo.
-echo [1/3] Starting PostgreSQL database in WSL...
+echo [1/4] Starting PostgreSQL database in WSL...
 wsl -u root service postgresql start
 
 echo.
-echo [2/3] Starting Backend (FastAPI)...
-cd backend
-start "HospitalAI Backend" cmd /c ".\venv\Scripts\activate.bat && python -m uvicorn main:app --reload"
-cd ..
+echo [2/4] Starting Database Proxy...
+start "HospitalAI DB Proxy" cmd /k "cd backend && .\venv\Scripts\python.exe proxy.py"
 
 echo.
-echo [3/3] Starting Frontend (Next.js)...
-cd frontend
-start "HospitalAI Frontend" cmd /c "npm run dev"
-cd ..
+echo [3/4] Starting Backend (FastAPI)...
+start "HospitalAI Backend" cmd /k "cd backend && .\venv\Scripts\python.exe -m uvicorn main:app --host 127.0.0.1 --port 8000"
+
+echo.
+echo [4/4] Starting Frontend (Next.js)...
+start "HospitalAI Frontend" cmd /k "cd frontend && npm run dev"
 
 echo.
 echo ===================================================
