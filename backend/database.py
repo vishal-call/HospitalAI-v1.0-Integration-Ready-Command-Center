@@ -19,6 +19,23 @@ def get_database_url() -> str:
             env_url = env_url.replace("postgres://", "postgresql+asyncpg://", 1)
         elif env_url.startswith("postgresql://"):
             env_url = env_url.replace("postgresql://", "postgresql+asyncpg://", 1)
+        
+        # Parse query parameters to keep only what asyncpg supports
+        if "?" in env_url:
+            base_url, query_str = env_url.split("?", 1)
+            params = query_str.split("&")
+            new_params = []
+            for p in params:
+                if "=" in p:
+                    k, v = p.split("=", 1)
+                    if k == "sslmode":
+                        new_params.append(f"ssl={v}")
+                    elif k in ["ssl", "host", "port", "user", "password", "database", "timeout", "command_timeout"]:
+                        new_params.append(p)
+            if new_params:
+                env_url = base_url + "?" + "&".join(new_params)
+            else:
+                env_url = base_url
         return env_url
     
     # 2. Check if running inside WSL itself
