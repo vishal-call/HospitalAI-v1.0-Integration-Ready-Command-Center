@@ -15,4 +15,5 @@ structlog>=24.1.0
 asgi-correlation-id>=4.3.0
 tenacity>=8.3.0
 fpdf2>=2.7.8
+python-multipart>=0.0.9
 
