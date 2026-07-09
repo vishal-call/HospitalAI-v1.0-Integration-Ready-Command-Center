@@ -144,7 +144,16 @@ app.add_middleware(RequestLoggingMiddleware)
 
 # Configure CORS for next.js frontend
 frontend_url_env = os.getenv("FRONTEND_URL", "http://localhost:3000")
-origins = [origin.strip() for origin in frontend_url_env.split(",") if origin.strip()]
+env_origins = [origin.strip() for origin in frontend_url_env.split(",") if origin.strip()]
+origins = []
+for origin in env_origins:
+    if "://" in origin:
+        parts = origin.split("://", 1)
+        scheme = parts[0]
+        host_part = parts[1].split("/", 1)[0]
+        origins.append(f"{scheme}://{host_part}")
+    else:
+        origins.append(origin.split("/", 1)[0])
 local_origins = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
