@@ -49,7 +49,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const loggedUser = await apiLogin(email, password);
       setUser(loggedUser);
-      router.push("/");
+      window.location.href = "/";
     } catch (err) {
       setUser(null);
       throw err;

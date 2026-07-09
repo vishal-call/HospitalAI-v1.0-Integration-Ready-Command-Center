@@ -14,9 +14,18 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (user) {
-      router.push("/");
+      window.location.href = "/";
     }
-  }, [user, router]);
+  }, [user]);
+
+  if (user) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center gap-4 text-slate-400">
+        <div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+        <p className="font-semibold text-sm">Redirecting to command center...</p>
+      </div>
+    );
+  }
 
   const demoAccounts = [
     {
