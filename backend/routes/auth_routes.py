@@ -44,6 +44,12 @@ async def login(
     # Create JWT access token
     access_token = create_access_token(data={"sub": user.username})
     
+    # Determine secure and samesite flags based on environment
+    import os
+    is_prod = os.getenv("DATABASE_URL") is not None
+    samesite_flag = "none" if is_prod else "lax"
+    secure_flag = True if is_prod else False
+    
     # Set HttpOnly Cookie
     response.set_cookie(
         key="auth_token",
@@ -51,8 +57,8 @@ async def login(
         httponly=True,
         max_age=3600 * 24,  # 1 day expiration
         expires=3600 * 24,
-        samesite="lax",
-        secure=False  # Set False for local HTTP development compatibility
+        samesite=samesite_flag,
+        secure=secure_flag
     )
     
     return user
@@ -60,11 +66,16 @@ async def login(
 @router.post("/logout")
 async def logout(response: Response):
     """Clear the auth HttpOnly cookie."""
+    import os
+    is_prod = os.getenv("DATABASE_URL") is not None
+    samesite_flag = "none" if is_prod else "lax"
+    secure_flag = True if is_prod else False
+    
     response.delete_cookie(
         key="auth_token",
         httponly=True,
-        samesite="lax",
-        secure=False
+        samesite=samesite_flag,
+        secure=secure_flag
     )
     return {"message": "Successfully logged out."}
 
