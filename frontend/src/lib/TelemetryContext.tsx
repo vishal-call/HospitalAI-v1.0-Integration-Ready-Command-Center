@@ -91,7 +91,11 @@ export function TelemetryProvider({ children }: { children: React.ReactNode }) {
   }, [user, isHistorical]);
 
   // Live WebSockets updates: only active when NOT in historical mode
-  const wsBaseUrl = process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:8000";
+  let rawWsUrl = process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:8000";
+  if (rawWsUrl.endsWith("/")) {
+    rawWsUrl = rawWsUrl.slice(0, -1);
+  }
+  const wsBaseUrl = rawWsUrl;
   const wsUrl = typeof window !== "undefined" && user && !isHistorical ? `${wsBaseUrl}/ws/dashboard` : "";
   const { connected: wsConnected } = useWebSocket(
     wsUrl,

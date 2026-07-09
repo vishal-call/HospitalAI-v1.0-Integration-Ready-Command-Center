@@ -144,7 +144,11 @@ export interface ClinicalEvent {
   actor_id?: number | null;
 }
 
-export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+let rawBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+if (rawBaseUrl.endsWith("/")) {
+  rawBaseUrl = rawBaseUrl.slice(0, -1);
+}
+export const API_BASE_URL = rawBaseUrl;
 
 async function authFetch(url: string, options: RequestInit = {}): Promise<Response> {
   options.credentials = "include";
