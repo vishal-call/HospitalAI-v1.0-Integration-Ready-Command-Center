@@ -231,9 +231,16 @@ export async function logout(): Promise<{ message: string }> {
 }
 
 export async function fetchCurrentUser(): Promise<User> {
-  const res = await authFetch(`${API_BASE_URL}/api/auth/me`, { cache: 'no-store' });
-  if (!res.ok) throw new Error("Not authenticated");
-  return res.json();
+  try {
+    const res = await authFetch(`${API_BASE_URL}/api/auth/me`, { cache: 'no-store' });
+    if (!res.ok) {
+      const errText = await res.text().catch(() => "No response body");
+      throw new Error(`Auth check failed (${res.status}): ${errText}`);
+    }
+    return res.json();
+  } catch (err: any) {
+    throw new Error(err.message || `Network or client error: ${err.toString()}`);
+  }
 }
 
 export async function fetchWards(): Promise<Ward[]> {

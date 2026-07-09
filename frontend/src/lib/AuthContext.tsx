@@ -23,10 +23,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const currentUser = await fetchCurrentUser();
       setUser(currentUser);
-    } catch {
-      // Not authenticated, set user null
-      setUser(null);
+    } catch (err: any) {
+      console.error("fetchCurrentUser failed:", err);
       if (typeof window !== "undefined") {
+        sessionStorage.setItem("last_auth_error", err.message || err.toString());
         localStorage.removeItem("auth_token");
       }
       try {

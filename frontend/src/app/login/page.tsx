@@ -11,6 +11,17 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [diagError, setDiagError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const savedError = sessionStorage.getItem("last_auth_error");
+      if (savedError) {
+        setDiagError(savedError);
+        sessionStorage.removeItem("last_auth_error");
+      }
+    }
+  }, []);
 
   useEffect(() => {
     if (user) {
@@ -121,6 +132,12 @@ export default function LoginPage() {
         {/* Right column: Login Form */}
         <div className="border-t md:border-t-0 md:border-l border-slate-800/80 pt-6 md:pt-0 md:pl-8 flex flex-col justify-center h-full">
           <h2 className="text-xl font-bold text-white mb-6">Staff Access Login</h2>
+
+          {diagError && (
+            <div className="p-3 mb-4 rounded-lg bg-amber-500/10 border border-amber-500/25 text-xs text-amber-400 font-medium">
+              <span className="font-bold">Session Diagnostic:</span> {diagError}
+            </div>
+          )}
 
           {error && (
             <div className="p-3 mb-4 rounded-lg bg-rose-500/10 border border-rose-500/20 text-xs text-rose-400 font-medium">
