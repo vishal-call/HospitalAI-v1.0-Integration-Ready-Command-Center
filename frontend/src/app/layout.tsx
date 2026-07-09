@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Inter } from "next/font/google";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -12,12 +12,15 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-import { AuthProvider } from "../lib/AuthContext";
+import { AuthProvider } from "@/lib/AuthContext";
+import { TelemetryProvider } from "@/lib/TelemetryContext";
 import GlobalNavbar from "../components/GlobalNavbar";
+
+const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "HospitalAI Command Center",
-  description: "Real-time AI-powered hospital operations and human-in-the-loop coordinator.",
+  description: "Next-generation real-time clinical triage orchestrator",
 };
 
 export default function RootLayout({
@@ -26,14 +29,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
-    >
-      <body className="min-h-full flex flex-col">
+    <html lang="en" className="h-full bg-slate-950 text-slate-100 antialiased dark">
+      <body className={`${inter.className} h-full`}>
         <AuthProvider>
-          <GlobalNavbar />
-          {children}
+          <TelemetryProvider>
+            <GlobalNavbar />
+            {children}
+          </TelemetryProvider>
         </AuthProvider>
       </body>
     </html>

@@ -683,3 +683,15 @@ class DataQualityIssue(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
     resolved_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
 
+
+class WardStaffing(Base):
+    __tablename__ = "ward_staffing"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    ward_name: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
+    current_nurses: Mapped[int] = mapped_column(Integer, nullable=False)
+    max_patient_ratio: Mapped[int] = mapped_column(Integer, default=2, nullable=False)
+
+    def __repr__(self) -> str:
+        return f"<WardStaffing Ward: {self.ward_name}, Nurses: {self.current_nurses}, Ratio: 1:{self.max_patient_ratio}>"
+

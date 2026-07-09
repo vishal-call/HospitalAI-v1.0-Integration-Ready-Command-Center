@@ -122,6 +122,7 @@ def test_alerts_and_stepdown_pipeline():
     recs = recs_resp.json()
     
     # We expect a pending step-down recommendation for Alice Smith (patient_id: 2 or chained_patient_id: 2) targeting a General Ward bed.
+    print("PENDING RECS:", recs)
     alice_rec = next((r for r in recs if r["patient_id"] == 2 or r.get("chained_patient_id") == 2), None)
     assert alice_rec is not None
     print(f"ICU Step-down recommendation triggered successfully! ID: {alice_rec['id']}, Reasoning: {alice_rec['reasoning']}")

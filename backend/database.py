@@ -14,6 +14,11 @@ def get_database_url() -> str:
     # 1. If explicit DATABASE_URL is set in environment, use it
     env_url = os.getenv("DATABASE_URL")
     if env_url:
+        # Rewriting postgresql driver to asyncpg for SQLAlchemy async compat
+        if env_url.startswith("postgres://"):
+            env_url = env_url.replace("postgres://", "postgresql+asyncpg://", 1)
+        elif env_url.startswith("postgresql://"):
+            env_url = env_url.replace("postgresql://", "postgresql+asyncpg://", 1)
         return env_url
     
     # 2. Check if running inside WSL itself

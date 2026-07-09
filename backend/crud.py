@@ -103,11 +103,24 @@ async def get_wards(db: AsyncSession) -> List[models.Ward]:
     )
     wards = result.scalars().all()
     
+    # Fetch all staffing records
+    staffing_res = await db.execute(select(models.WardStaffing))
+    staffing_records = {s.ward_name: s for s in staffing_res.scalars().all()}
+    
     # Calculate dynamically for serialization
     for ward in wards:
         occupied = sum(1 for bed in ward.beds if bed.status == models.BedStatus.OCCUPIED)
         ward.occupied_beds_count = occupied
         ward.utilization_rate = round((occupied / ward.capacity) * 100.0, 1) if ward.capacity > 0 else 0.0
+        
+        # Populate staffing info dynamically
+        staff = staffing_records.get(ward.name)
+        if staff:
+            ward.current_nurses = staff.current_nurses
+            ward.max_patient_ratio = staff.max_patient_ratio
+        else:
+            ward.current_nurses = 0
+            ward.max_patient_ratio = 2
         
     return wards
 

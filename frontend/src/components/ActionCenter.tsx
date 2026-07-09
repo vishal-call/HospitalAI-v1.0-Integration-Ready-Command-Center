@@ -10,6 +10,7 @@ interface ActionCenterProps {
   actionRecommendation: (id: number, action: "APPROVE" | "REJECT", userId: number) => Promise<any>;
   activeUserId: number;
   userRole: string;
+  disabled?: boolean;
 }
 
 export default function ActionCenter({
@@ -18,6 +19,7 @@ export default function ActionCenter({
   actionRecommendation,
   activeUserId,
   userRole,
+  disabled,
 }: ActionCenterProps) {
   const [processingId, setProcessingId] = useState<number | null>(null);
   const [errorMap, setErrorMap] = useState<Record<number, string>>({});
@@ -53,7 +55,7 @@ export default function ActionCenter({
   const isNurse = userRole === "NURSE";
 
   const handleAction = async (id: number, action: "APPROVE" | "REJECT", reason?: string) => {
-    if (isNurse) return;
+    if (disabled || isNurse) return;
 
     // Trigger Optimistic UI (Dim card and show loading state)
     setOptimisticState((prev) => ({ ...prev, [id]: action }));
@@ -156,7 +158,7 @@ export default function ActionCenter({
               isOptimistic={optimisticState[rec.id] !== undefined}
               processingId={processingId}
               errorMsg={errorMap[rec.id]}
-              isNurse={isNurse}
+              isNurse={isNurse || !!disabled}
               onApprove={(id) => handleAction(id, "APPROVE")}
               onRejectPrompt={(id) => { setRejectModalId(id); setRejectReason(""); }}
               onFeedbackPrompt={(id) => setFeedbackModalId(id)}

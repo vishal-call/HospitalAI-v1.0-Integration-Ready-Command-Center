@@ -75,6 +75,8 @@ class WardResponse(WardBase):
     beds: List[BedResponse] = []
     occupied_beds_count: int = 0
     utilization_rate: float = 0.0
+    current_nurses: int = 0
+    max_patient_ratio: int = 2
 
     class Config:
         from_attributes = True

@@ -137,6 +137,13 @@ export default function WardOverview({ wards, onBedUpdate }: WardOverviewProps) 
                   <span>Occupied: <strong className="text-slate-200">{ward.occupied_beds_count}</strong></span>
                   <span>Total Capacity: <strong className="text-slate-200">{ward.capacity}</strong></span>
                 </div>
+
+                {ward.current_nurses !== undefined && ward.current_nurses > 0 && (
+                  <div className="mt-3 pt-3 border-t border-slate-800/50 flex justify-between items-center text-xs text-slate-400 font-medium">
+                    <span>Staffing: <strong className="text-slate-200">{ward.current_nurses} Nurses</strong></span>
+                    <span>Ratio: <strong className="text-slate-200">1:{ward.max_patient_ratio} limit</strong></span>
+                  </div>
+                )}
               </div>
             </div>
           );

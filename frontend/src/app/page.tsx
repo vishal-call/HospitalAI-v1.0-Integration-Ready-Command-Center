@@ -15,15 +15,17 @@ import {
   PatientStatus,
   RecommendationDetail,
   Alert,
-  PartnerHospital
+  PartnerHospital,
+  API_BASE_URL
 } from "@/lib/api";
 import WardOverview from "@/components/WardOverview";
 import PatientTable from "@/components/PatientTable";
 import ActionCenter from "@/components/ActionCenter";
 import AlertFeed from "@/components/AlertFeed";
 import PartnerNetwork from "@/components/PartnerNetwork";
-import { PlusCircle, Activity, RefreshCw, Radio, UserPlus, LogOut, ShieldCheck, ShieldAlert, Heart, AlertOctagon, Layers, PlayCircle } from "lucide-react";
 import { useAuth } from "../lib/AuthContext";
+import { useTelemetry } from "@/lib/TelemetryContext";
+import TimeTravelSlider from "@/components/TimeTravelSlider";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -31,6 +33,7 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { useWebSocket } from "@/hooks/useWebSocket";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend } from "recharts";
 import Link from "next/link";
+import { PlusCircle, Activity, RefreshCw, Radio, UserPlus, LogOut, ShieldCheck, ShieldAlert, Heart, AlertOctagon, Layers, PlayCircle, FileDown } from "lucide-react";
 
 const admitSchema = z.object({
   name: z.string().min(1, "Patient name is required").max(100, "Name must be <= 100 characters"),
@@ -58,19 +61,28 @@ const occupancyHistory = [
 
 export default function DashboardPage() {
   const { user, loading: authLoading, logout } = useAuth();
-  const [wards, setWards] = useState<Ward[]>([]);
-  const [patients, setPatients] = useState<Patient[]>([]);
-  const [recommendations, setRecommendations] = useState<RecommendationDetail[]>([]);
-  const [alerts, setAlerts] = useState<Alert[]>([]);
-  const [partnerHospitals, setPartnerHospitals] = useState<PartnerHospital[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const {
+    wards, setWards,
+    patients, setPatients,
+    recommendations, setRecommendations,
+    alerts, setAlerts,
+    partnerHospitals, setPartnerHospitals,
+    loading, error, setError, loadData,
+    wsConnected,
+    isHistorical, historicalTime, enterTimeTravel, exitTimeTravel
+  } = useTelemetry();
 
   // Admission Modal State & Idempotency Key
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [admitLoading, setAdmitLoading] = useState(false);
   const [admitError, setAdmitError] = useState<string | null>(null);
   const [admitIdempotencyKey, setAdmitIdempotencyKey] = useState<string>("");
+
+  const [downloadingReport, setDownloadingReport] = useState(false);
+
+  const handleDownloadHandover = () => {
+    window.open(`${API_BASE_URL}/api/reports/handover`, "_blank");
+  };
 
   const {
     register,
@@ -95,126 +107,6 @@ export default function DashboardPage() {
       setAdmitIdempotencyKey(window.crypto.randomUUID());
     }
   }, [isModalOpen]);
-
-  // Load Initial REST Data
-  const loadData = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const [wardsData, patientsData, recsData, alertsData, partnersData] = await Promise.all([
-        fetchWards(),
-        fetchPatients(),
-        fetchPendingRecommendations(),
-        fetchActiveAlerts(),
-        fetchPartnerHospitals()
-      ]);
-      setWards(wardsData);
-      setPatients(patientsData);
-      setRecommendations(recsData);
-      setAlerts(alertsData);
-      setPartnerHospitals(partnersData);
-    } catch (err: any) {
-      setError(err.message || "Failed to retrieve telemetry data.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    if (!user) return;
-    loadData();
-  }, [user]);
-
-  // WebSockets Live Listener - Binds streams directly into local React state arrays
-  const wsUrl = typeof window !== "undefined" && user ? `ws://localhost:8000/ws/dashboard` : "";
-  const { connected: wsConnected, metrics: wsMetrics } = useWebSocket(
-    wsUrl,
-    (payload: any) => {
-      console.log(`WebSocket event stream received: ${payload.type}`, payload);
-
-      if (payload.type === "PATIENT_ADMITTED") {
-        const newPatient = payload.data;
-        setPatients((prev) => [newPatient, ...prev.filter(p => p.id !== newPatient.id)]);
-        if (payload.recommendation) {
-          setRecommendations((prev) => [payload.recommendation, ...prev.filter(r => r.id !== payload.recommendation.id)]);
-        }
-        // background sync to verify bed/ward states
-        fetchWards().then(setWards);
-      } 
-      
-      else if (payload.type === "PATIENT_UPDATED") {
-        const updated = payload.data;
-        setPatients((prev) => prev.map(p => p.id === updated.patient_id ? { ...p, ...updated } : p));
-        if (payload.recommendation) {
-          setRecommendations((prev) => [payload.recommendation, ...prev.filter(r => r.id !== payload.recommendation.id)]);
-        }
-        fetchWards().then(setWards);
-      } 
-      
-      else if (payload.type === "RECOMMENDATION_ACTIONED") {
-        const actionedId = payload.data.recommendation_id;
-        setRecommendations((prev) => prev.filter(r => r.id !== actionedId));
-        // Refresh wards and patients to show correct bed status
-        fetchWards().then(setWards);
-        fetchPatients().then(setPatients);
-      } 
-      
-      else if (payload.type === "ALERT_TRIGGERED") {
-        // payload.data is a list of Alerts
-        setAlerts((prev) => {
-          const incoming = payload.data as Alert[];
-          const filtered = prev.filter(a => !incoming.find(i => i.id === a.id));
-          return [...incoming, ...filtered];
-        });
-      } 
-      
-      else if (payload.type === "RECOMMENDATION_GENERATED" || payload.type === "SHADOW_RECOMMENDATION_GENERATED") {
-        const newRec = payload.data as RecommendationDetail;
-        setRecommendations((prev) => [newRec, ...prev.filter(r => r.id !== newRec.id)]);
-      }
-      
-      else if (payload.type === "ALERT_ACKNOWLEDGED") {
-        const ackId = payload.data.alert_id;
-        setAlerts((prev) => prev.filter(a => a.id !== ackId));
-      } 
-      
-      else if (payload.type === "BED_UPDATED") {
-        const updatedBed = payload.data;
-        setWards((prevWards) => 
-          prevWards.map((w) => {
-            if (w.id === updatedBed.ward_id) {
-              const updatedBeds = w.beds?.map((b) => 
-                b.id === updatedBed.bed_id 
-                  ? { ...b, status: updatedBed.status, patient_id: updatedBed.patient_id, patient: updatedBed.patient } 
-                  : b
-              ) || [];
-              return { ...w, beds: updatedBeds };
-            }
-            return w;
-          })
-        );
-      }
-
-      else if (payload.type === "DELTA_REHYDRATION") {
-        const { alerts: deltaAlerts, recommendations: deltaRecs } = payload.data;
-        if (deltaAlerts && deltaAlerts.length > 0) {
-          setAlerts((prev) => {
-            const filtered = prev.filter(a => !deltaAlerts.find((da: any) => da.id === a.id));
-            return [...deltaAlerts, ...filtered];
-          });
-        }
-        if (deltaRecs && deltaRecs.length > 0) {
-          setRecommendations((prev) => {
-            const filtered = prev.filter(r => !deltaRecs.find((dr: any) => dr.id === r.id));
-            return [...deltaRecs, ...filtered];
-          });
-        }
-        // background sync database collections
-        fetchWards().then(setWards);
-        fetchPatients().then(setPatients);
-      }
-    }
-  );
 
   const handleAdmitSubmit = async (data: AdmitFormData) => {
     try {
@@ -266,7 +158,7 @@ export default function DashboardPage() {
     <main className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-indigo-500/30 selection:text-indigo-200">
       
       {/* Reconnecting Glassmorphic Banner */}
-      {!wsConnected && (
+      {!wsConnected && !isHistorical && (
         <div className="bg-rose-950/80 border-b border-rose-500/20 text-rose-200 text-xs px-4 py-2 flex items-center justify-center gap-2 backdrop-blur-md sticky top-0 z-50 animate-in slide-in-from-top duration-300">
           <span className="relative flex h-2 w-2">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
@@ -276,10 +168,29 @@ export default function DashboardPage() {
         </div>
       )}
 
+      {/* Historical Playback Amber Banner */}
+      {isHistorical && (
+        <div className="bg-amber-950/90 border-b border-amber-500/30 text-amber-200 text-xs px-6 py-2.5 flex items-center justify-between gap-2 backdrop-blur-md sticky top-0 z-50 animate-in slide-in-from-top duration-300">
+          <div className="flex items-center gap-2.5">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-550 bg-amber-500"></span>
+            </span>
+            <span className="font-bold tracking-wide uppercase">HISTORICAL MODE - READ ONLY (Viewing state at {historicalTime ? new Date(historicalTime).toLocaleString() : ""})</span>
+          </div>
+          <button 
+            onClick={exitTimeTravel} 
+            className="px-3 py-1 bg-amber-500/20 hover:bg-amber-500/35 border border-amber-500/30 rounded-lg text-[10px] font-bold text-amber-300 transition-colors"
+          >
+            Resume Live
+          </button>
+        </div>
+      )}
+
       {/* Background Gradient Ornaments */}
       <div className="absolute top-0 left-0 w-full h-[600px] bg-radial-gradient from-indigo-900/10 via-slate-950/0 to-slate-950/0 pointer-events-none" />
       {/* Main Dashboard Workspace */}
-      <div className="flex flex-col space-y-12 p-6 flex-1 max-w-7xl w-full mx-auto">
+      <div className="flex flex-col space-y-12 p-6 pb-28 flex-1 max-w-7xl w-full mx-auto">
         
         {/* Page Actions */}
         <div className="flex justify-end items-center gap-4">
@@ -454,8 +365,22 @@ export default function DashboardPage() {
             <section>
               <h2 className="text-2xl font-bold mb-6">Advanced Controls & Configuration</h2>
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                <div className="lg:col-span-8 rounded-2xl border border-slate-800 bg-slate-900/40 p-6 backdrop-blur-xl flex items-center justify-center min-h-[300px]">
-                  <p className="text-slate-500 font-semibold uppercase tracking-wider text-sm">Configuration Area Placeholder</p>
+                <div className="lg:col-span-8 rounded-2xl border border-slate-800 bg-slate-900/40 p-6 backdrop-blur-xl flex flex-col justify-between min-h-[300px]">
+                  <div>
+                    <h3 className="text-lg font-bold text-slate-200 mb-2">Shift Handover & Operations Reporting</h3>
+                    <p className="text-xs text-slate-400 max-w-md">
+                      Generate a detailed operations briefing summarizing current census occupancy metrics, active unacknowledged alerts, critical patients, and pending clinical transfer recommendations.
+                    </p>
+                  </div>
+                  <div className="flex gap-4">
+                    <button
+                      onClick={handleDownloadHandover}
+                      className="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-semibold text-xs shadow-lg shadow-indigo-600/20 hover:shadow-indigo-600/35 transition-all"
+                    >
+                      <FileDown className="h-4 w-4" />
+                      Generate Shift Handover (PDF)
+                    </button>
+                  </div>
                 </div>
                 <div className="lg:col-span-4">
                   <ErrorBoundary title="HITL Relocation Actions">
@@ -465,6 +390,7 @@ export default function DashboardPage() {
                       actionRecommendation={actionRecommendation}
                       activeUserId={user.id}
                       userRole={user.role}
+                      disabled={isHistorical}
                     />
                   </ErrorBoundary>
                 </div>
@@ -595,6 +521,8 @@ export default function DashboardPage() {
           </div>
         </div>
       )}
+
+      <TimeTravelSlider />
     </main>
   );
 }

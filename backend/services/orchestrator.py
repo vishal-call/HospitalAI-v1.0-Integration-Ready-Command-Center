@@ -1,6 +1,7 @@
 import os
+import logging
 from typing import Optional, Dict
-from sqlalchemy import select
+from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -9,6 +10,36 @@ from models import PatientStatus, WardType, BedStatus, RecommendationStatus
 from services.scoring import calculate_criticality_score
 
 from datetime import datetime, timedelta
+
+logger = logging.getLogger("HospitalAI-Orchestrator")
+
+async def is_staffing_allowed_for_ward_type(db: AsyncSession, ward_type: models.WardType) -> bool:
+    # 1. Query the ward to get its name and ID
+    ward_res = await db.execute(
+        select(models.Ward).where(models.Ward.type == ward_type)
+    )
+    ward = ward_res.scalar_one_or_none()
+    if not ward:
+        return True
+        
+    # 2. Query staffing record for this ward
+    staffing_res = await db.execute(
+        select(models.WardStaffing).where(models.WardStaffing.ward_name == ward.name)
+    )
+    staffing = staffing_res.scalar_one_or_none()
+    if not staffing:
+        return True # no staffing constraint set, allow
+        
+    # 3. Count currently occupied beds in this ward
+    occupied_count = await db.scalar(
+        select(func.count(models.Bed.id))
+        .where(models.Bed.ward_id == ward.id)
+        .where(models.Bed.status == models.BedStatus.OCCUPIED)
+    )
+    
+    # 4. Check constraint: (current_patients + 1) <= (current_nurses * max_patient_ratio)
+    allowed = (occupied_count + 1) <= (staffing.current_nurses * staffing.max_patient_ratio)
+    return allowed
 
 async def evaluate_patient_and_recommend(
     db: AsyncSession,
@@ -93,9 +124,29 @@ async def evaluate_patient_and_recommend(
     target_bed_result = await db.execute(target_bed_query)
     target_bed = target_bed_result.scalar_one_or_none()
 
+    if target_bed:
+        # Check staffing constraints for the target ward!
+        is_allowed = await is_staffing_allowed_for_ward_type(db, target_ward_type)
+        if not is_allowed:
+            logger.info(f"Staffing constraint breached for ward type {target_ward_type}. Routing to inter-hospital transfer.")
+            return await run_inter_hospital_agent(
+                db, 
+                patient, 
+                custom_reasoning="Blocked: Insufficient Staffing Ratio (1:2 limit reached)."
+            )
+
     if not target_bed:
         # No beds available in target ward. If targeting ICU, evaluate for step-down relocation
         if target_ward_type == WardType.ICU:
+            # For step-down, it recommends a CHAINED_TRANSFER. We must also verify staffing ratio for ICU before recommending it!
+            is_icu_staffing_allowed = await is_staffing_allowed_for_ward_type(db, WardType.ICU)
+            if not is_icu_staffing_allowed:
+                logger.info("ICU staffing constraint breached. Blocking step-down and routing directly to inter-hospital transfer.")
+                return await run_inter_hospital_agent(
+                    db, 
+                    patient, 
+                    custom_reasoning="Blocked: Insufficient Staffing Ratio (1:2 limit reached)."
+                )
             stepdown_rec = await run_icu_step_down_agent(db, patient)
             if stepdown_rec:
                 return stepdown_rec
@@ -304,7 +355,8 @@ async def run_icu_step_down_agent(
 
 async def run_inter_hospital_agent(
     db: AsyncSession,
-    incoming_patient: models.Patient
+    incoming_patient: models.Patient,
+    custom_reasoning: Optional[str] = None
 ) -> Optional[models.Recommendation]:
     """
     Invoked when local ICU is at 100% capacity and no internal step-down is possible.
@@ -341,14 +393,14 @@ async def run_inter_hospital_agent(
     transfer_request = models.TransferRequest(
         patient_id=incoming_patient.id,
         partner_hospital_id=closest_partner.id,
-        reason=f"Local ICU at absolute capacity with no viable step-down candidates.",
+        reason=custom_reasoning or f"Local ICU at absolute capacity with no viable step-down candidates.",
         status=models.TransferRequestStatus.PENDING
     )
     db.add(transfer_request)
     await db.flush()
     
     # 4. Generate the Recommendation record linking to the external transfer
-    reasoning = (
+    reasoning = custom_reasoning or (
         f"Local ICU at absolute capacity with no viable step-down candidates. "
         f"Recommend immediate external transfer to {closest_partner.name} "
         f"(Distance: {closest_partner.distance_km:.1f} km) which reports available ICU capacity."
@@ -360,6 +412,7 @@ async def run_inter_hospital_agent(
         target_bed_id=None, # external transfer has no local target bed
         partner_hospital_id=closest_partner.id,
         status=models.RecommendationStatus.PENDING,
+        recommendation_type=models.RecommendationType.INTER_HOSPITAL_TRANSFER,
         criticality_score=incoming_patient.criticality_score,
         reasoning=reasoning,
         expires_at=datetime.utcnow() + timedelta(minutes=5)

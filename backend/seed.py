@@ -4,7 +4,7 @@ from typing import Optional
 from datetime import datetime
 from sqlalchemy.ext.asyncio import AsyncSession
 from database import engine, AsyncSessionLocal, Base
-from models import User, Patient, Ward, Bed, Recommendation, Alert, PartnerHospital, UserRole, PatientStatus, WardType, BedStatus, AlertType, AlertSeverity
+from models import User, Patient, Ward, Bed, Recommendation, Alert, PartnerHospital, UserRole, PatientStatus, WardType, BedStatus, AlertType, AlertSeverity, WardStaffing
 
 from services.auth import hash_password
 
@@ -20,7 +20,7 @@ async def seed_data(db: Optional[AsyncSession] = None, clear_only: bool = False)
                 logger.info("Truncating existing tables...")
                 try:
                     await conn.execute(text("""
-                        TRUNCATE TABLE audit_logs, alerts, recommendations, transfer_requests, patients, beds, partner_hospitals, users, idempotency_keys, wards RESTART IDENTITY CASCADE;
+                        TRUNCATE TABLE audit_logs, alerts, recommendations, transfer_requests, patients, beds, partner_hospitals, users, idempotency_keys, wards, ward_staffing RESTART IDENTITY CASCADE;
                     """))
                 except Exception as e:
                     logger.exception("Failed to truncate tables, falling back to drop:")
@@ -105,6 +105,12 @@ async def seed_data(db: Optional[AsyncSession] = None, clear_only: bool = False)
                 emergency = Ward(name="Emergency Department", type=WardType.EMERGENCY, capacity=14)
                 general = Ward(name="General Ward", type=WardType.GENERAL, capacity=30)
                 session.add_all([icu, emergency, general])
+                
+                logger.info("Seeding Ward Staffing ratios...")
+                icu_staff = WardStaffing(ward_name="Intensive Care Unit (ICU)", current_nurses=10, max_patient_ratio=2)
+                ed_staff = WardStaffing(ward_name="Emergency Department", current_nurses=10, max_patient_ratio=2)
+                general_staff = WardStaffing(ward_name="General Ward", current_nurses=20, max_patient_ratio=2)
+                session.add_all([icu_staff, ed_staff, general_staff])
                 
                 # Flush to get Ward IDs
                 await session.flush()

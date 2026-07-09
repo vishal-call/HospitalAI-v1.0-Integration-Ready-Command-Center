@@ -1,4 +1,5 @@
 import asyncio
+import os
 import json
 import logging
 from typing import List, Optional
@@ -142,9 +143,22 @@ class RequestLoggingMiddleware:
 app.add_middleware(RequestLoggingMiddleware)
 
 # Configure CORS for next.js frontend
+frontend_url_env = os.getenv("FRONTEND_URL", "http://localhost:3000")
+origins = [origin.strip() for origin in frontend_url_env.split(",") if origin.strip()]
+local_origins = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "http://172.21.128.1:3000",
+    "http://localhost:3001",
+    "http://127.0.0.1:3001"
+]
+for lo in local_origins:
+    if lo not in origins:
+        origins.append(lo)
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000", "http://172.21.128.1:3000", "http://localhost:3001", "http://127.0.0.1:3001"],  # Next.js local port
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -155,9 +169,10 @@ app.include_router(auth_router)
 
 from routes.scenario_routes import router as scenario_router
 from routes.integration_routes import router as integration_router
-
+from routes.reports_router import router as reports_router
 app.include_router(scenario_router)
 app.include_router(integration_router)
+app.include_router(reports_router)
 
 # WebSocket Connection Manager for live dashboard updates
 class ConnectionManager:
@@ -322,6 +337,236 @@ async def root():
 @app.get("/api/health")
 async def health_check():
     return {"status": "ok", "service": "HospitalAI"}
+
+def serialize_dt(dt):
+    if dt is None:
+        return None
+    if isinstance(dt, str):
+        return dt
+    return dt.isoformat()
+
+def patient_to_dict(p):
+    return {
+        "id": p.id,
+        "name": p.name,
+        "age": p.age,
+        "gender": p.gender,
+        "admission_reason": p.admission_reason,
+        "status": p.status.value if hasattr(p.status, "value") else str(p.status),
+        "criticality_score": p.criticality_score,
+        "current_bed_id": p.current_bed_id,
+        "admitted_at": serialize_dt(p.admitted_at),
+        "discharged_at": serialize_dt(p.discharged_at)
+    }
+
+def bed_to_dict(b):
+    return {
+        "id": b.id,
+        "ward_id": b.ward_id,
+        "bed_number": b.bed_number,
+        "status": b.status.value if hasattr(b.status, "value") else str(b.status),
+        "patient_id": b.patient_id
+    }
+
+def alert_to_dict(a):
+    return {
+        "id": a.id,
+        "patient_id": a.patient_id,
+        "alert_type": a.alert_type.value if hasattr(a.alert_type, "value") else str(a.alert_type),
+        "severity": a.severity.value if hasattr(a.severity, "value") else str(a.severity),
+        "message": a.message,
+        "is_acknowledged": a.is_acknowledged,
+        "status": a.status.value if hasattr(a.status, "value") else str(a.status),
+        "created_at": serialize_dt(a.created_at),
+        "acknowledged_at": serialize_dt(a.acknowledged_at),
+        "acknowledged_by": a.acknowledged_by,
+        "resolved_at": serialize_dt(a.resolved_at),
+        "resolved_by": a.resolved_by,
+        "resolution_note": a.resolution_note
+    }
+
+def rec_to_dict(r):
+    return {
+        "id": r.id,
+        "patient_id": r.patient_id,
+        "source_bed_id": r.source_bed_id,
+        "target_bed_id": r.target_bed_id,
+        "partner_hospital_id": r.partner_hospital_id,
+        "status": r.status.value if hasattr(r.status, "value") else str(r.status),
+        "recommendation_type": r.recommendation_type.value if (hasattr(r, "recommendation_type") and r.recommendation_type and hasattr(r.recommendation_type, "value")) else (str(r.recommendation_type) if hasattr(r, "recommendation_type") and r.recommendation_type else None),
+        "chained_patient_id": r.chained_patient_id if hasattr(r, "chained_patient_id") else None,
+        "chained_target_bed_id": r.chained_target_bed_id if hasattr(r, "chained_target_bed_id") else None,
+        "criticality_score": r.criticality_score,
+        "reasoning": r.reasoning,
+        "created_at": serialize_dt(r.created_at),
+        "expires_at": serialize_dt(r.expires_at),
+        "is_shadow": r.is_shadow if hasattr(r, "is_shadow") else False,
+        "approved_at": serialize_dt(r.approved_at) if hasattr(r, "approved_at") else None,
+        "approved_by_user_id": r.approved_by_user_id if hasattr(r, "approved_by_user_id") else None,
+        "actioned_by_user_id": r.actioned_by_user_id if hasattr(r, "actioned_by_user_id") else None,
+        "override_reason": r.override_reason if hasattr(r, "override_reason") else None
+    }
+
+@app.get("/api/state/snapshot")
+async def get_state_snapshot(timestamp: str, db: AsyncSession = Depends(get_db)):
+    try:
+        # Parse ISO timestamp
+        if timestamp.endswith("Z"):
+            timestamp = timestamp[:-1] + "+00:00"
+        try:
+            target_dt = datetime.fromisoformat(timestamp)
+        except ValueError:
+            target_dt = datetime.strptime(timestamp[:19], "%Y-%m-%dT%H:%M:%S")
+            
+        # 1. Fetch current collections from DB
+        from sqlalchemy import select
+        from sqlalchemy.orm import selectinload
+        
+        patients_res = await db.execute(select(models.Patient))
+        all_patients = patients_res.scalars().all()
+        
+        beds_res = await db.execute(select(models.Bed))
+        all_beds = beds_res.scalars().all()
+        
+        wards_res = await db.execute(select(models.Ward))
+        all_wards = wards_res.scalars().all()
+        
+        alerts_res = await db.execute(select(models.Alert))
+        all_alerts = alerts_res.scalars().all()
+        
+        recs_res = await db.execute(select(models.Recommendation))
+        all_recs = recs_res.scalars().all()
+        
+        partners_res = await db.execute(select(models.PartnerHospital))
+        all_partners = partners_res.scalars().all()
+        
+        # Convert to dictionary mappings
+        patients_map = {p.id: patient_to_dict(p) for p in all_patients}
+        beds_map = {b.id: bed_to_dict(b) for b in all_beds}
+        alerts_map = {a.id: alert_to_dict(a) for a in all_alerts}
+        recs_map = {r.id: rec_to_dict(r) for r in all_recs}
+        partners_map = {p.id: {
+            "id": p.id,
+            "name": p.name,
+            "location": p.location,
+            "distance_km": p.distance_km,
+            "icu_beds_available": p.icu_beds_available,
+            "general_beds_available": p.general_beds_available
+        } for p in all_partners}
+        
+        # 2. Query Audit Logs after target_dt
+        logs_res = await db.execute(
+            select(models.AuditLog)
+            .where(models.AuditLog.created_at > target_dt)
+            .order_by(models.AuditLog.id.desc())
+        )
+        audit_logs = logs_res.scalars().all()
+        
+        # 3. Apply rollback logic in reverse chronological order
+        import json
+        for log in audit_logs:
+            before = json.loads(log.before_data) if log.before_data else None
+            entity_id = log.entity_id
+            entity_type = log.entity_type.lower()
+            
+            if entity_type == "patient":
+                if log.action in ("CREATE", "INSERT", "ADMIT"):
+                    if entity_id in patients_map:
+                        del patients_map[entity_id]
+                elif log.action == "UPDATE":
+                    if before:
+                        patients_map[entity_id] = before
+                elif log.action in ("DELETE", "DISCHARGE"):
+                    if before:
+                        patients_map[entity_id] = before
+                        
+            elif entity_type == "bed":
+                if log.action == "UPDATE":
+                    if before:
+                        beds_map[entity_id] = before
+                        
+            elif entity_type == "alert":
+                if log.action in ("CREATE", "TRIGGER"):
+                    if entity_id in alerts_map:
+                        del alerts_map[entity_id]
+                elif log.action in ("UPDATE", "ACKNOWLEDGE", "RESOLVE", "RESOLVE_ALERT"):
+                    if before:
+                        alerts_map[entity_id] = before
+                        
+            elif entity_type == "recommendation":
+                if log.action in ("CREATE", "GENERATE"):
+                    if entity_id in recs_map:
+                        del recs_map[entity_id]
+                elif log.action in ("UPDATE", "ACTION_APPROVE", "ACTION_REJECT", "ACTION_APPROVE_CHAINED"):
+                    if before:
+                        recs_map[entity_id] = before
+
+        # 4. Fetch staffing records to populate Ward Response
+        staffing_res = await db.execute(select(models.WardStaffing))
+        staffing_records = {s.ward_name: s for s in staffing_res.scalars().all()}
+
+        # 5. Reconstruct nested objects
+        reconstructed_wards = []
+        for w in all_wards:
+            w_beds = []
+            w_occupied = 0
+            for b in all_beds:
+                if b.ward_id == w.id:
+                    b_dict = beds_map.get(b.id)
+                    if b_dict:
+                        if b_dict["status"] == "OCCUPIED" and b_dict["patient_id"]:
+                            b_dict["patient"] = patients_map.get(b_dict["patient_id"])
+                            w_occupied += 1
+                        else:
+                            b_dict["patient"] = None
+                        w_beds.append(b_dict)
+                        
+            staff = staffing_records.get(w.name)
+            reconstructed_wards.append({
+                "id": w.id,
+                "name": w.name,
+                "type": w.type.value if hasattr(w.type, "value") else str(w.type),
+                "capacity": w.capacity,
+                "beds": w_beds,
+                "occupied_beds_count": w_occupied,
+                "utilization_rate": round((w_occupied / w.capacity) * 100.0, 1) if w.capacity > 0 else 0.0,
+                "current_nurses": staff.current_nurses if staff else 0,
+                "max_patient_ratio": staff.max_patient_ratio if staff else 2
+            })
+            
+        reconstructed_alerts = []
+        for a_id, a_dict in alerts_map.items():
+            if not a_dict.get("is_acknowledged", False):
+                if a_dict.get("patient_id"):
+                    a_dict["patient"] = patients_map.get(a_dict["patient_id"])
+                else:
+                    a_dict["patient"] = None
+                reconstructed_alerts.append(a_dict)
+                
+        reconstructed_recs = []
+        for r_id, r_dict in recs_map.items():
+            if r_dict.get("status") == "PENDING":
+                r_dict["patient"] = patients_map.get(r_dict["patient_id"])
+                r_dict["source_bed"] = beds_map.get(r_dict["source_bed_id"]) if r_dict.get("source_bed_id") else None
+                r_dict["target_bed"] = beds_map.get(r_dict["target_bed_id"]) if r_dict.get("target_bed_id") else None
+                r_dict["chained_patient"] = patients_map.get(r_dict["chained_patient_id"]) if r_dict.get("chained_patient_id") else None
+                r_dict["chained_target_bed"] = beds_map.get(r_dict["chained_target_bed_id"]) if r_dict.get("chained_target_bed_id") else None
+                r_dict["partner_hospital"] = partners_map.get(r_dict["partner_hospital_id"]) if r_dict.get("partner_hospital_id") else None
+                reconstructed_recs.append(r_dict)
+                
+        reconstructed_patients = []
+        for p_id, p_dict in patients_map.items():
+            if p_dict.get("current_bed_id") is not None and p_dict.get("discharged_at") is None:
+                reconstructed_patients.append(p_dict)
+                
+        return {
+            "wards": reconstructed_wards,
+            "patients": reconstructed_patients,
+            "recommendations": reconstructed_recs,
+            "alerts": reconstructed_alerts
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to reconstruct state: {str(e)}")
 
 # --- REST Endpoints ---
 
@@ -1065,3 +1310,9 @@ async def websocket_endpoint(websocket: WebSocket, db: AsyncSession = Depends(ge
     except Exception as e:
         logger.error(f"WebSocket connection error: {e}")
         manager.disconnect(websocket)
+
+
+if __name__ == "__main__":
+    import uvicorn
+    port = int(os.getenv("PORT", 8000))
+    uvicorn.run("main:app", host="0.0.0.0", port=port)

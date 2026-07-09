@@ -36,7 +36,8 @@ export default function ResponseCenterPage() {
   }, [user]);
 
   // WebSocket for Immutable Updates
-  const wsUrl = typeof window !== "undefined" && user ? `ws://localhost:8000/ws/dashboard` : "";
+  const wsBaseUrl = process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:8000";
+  const wsUrl = typeof window !== "undefined" && user ? `${wsBaseUrl}/ws/dashboard` : "";
   useWebSocket(wsUrl, (payload: any) => {
     if (["ALERT_ACKNOWLEDGED", "ALERT_RESOLVED", "ALERT_ESCALATED", "SLA_BREACHED"].includes(payload.type)) {
       setAlerts((prev) => {
