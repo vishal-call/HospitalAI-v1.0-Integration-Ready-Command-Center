@@ -61,6 +61,7 @@ async def login(
         secure=secure_flag
     )
     
+    user.token = access_token
     return user
 
 @router.post("/logout")

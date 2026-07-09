@@ -146,9 +146,17 @@ export interface ClinicalEvent {
 
 export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
-// Helper wrapper to enforce credentials: "include" for HttpOnly auth cookies in CORS with exponential backoff retries for safe GET requests
 async function authFetch(url: string, options: RequestInit = {}): Promise<Response> {
   options.credentials = "include";
+
+  if (typeof window !== "undefined") {
+    const token = localStorage.getItem("auth_token");
+    if (token) {
+      const headers = (options.headers || {}) as Record<string, string>;
+      headers["Authorization"] = `Bearer ${token}`;
+      options.headers = headers;
+    }
+  }
 
   const method = (options.method || "GET").toUpperCase();
   const isRetryable = method === "GET";

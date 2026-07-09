@@ -26,6 +26,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch {
       // Not authenticated, set user null
       setUser(null);
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("auth_token");
+      }
       try {
         await apiLogout(); // clear the invalid HttpOnly cookie via the backend
       } catch (err) {
@@ -49,6 +52,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const loggedUser = await apiLogin(email, password);
       setUser(loggedUser);
+      if (typeof window !== "undefined" && loggedUser.token) {
+        localStorage.setItem("auth_token", loggedUser.token);
+      }
       window.location.href = "/";
     } catch (err) {
       setUser(null);
@@ -63,7 +69,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       await apiLogout();
       setUser(null);
-      router.push("/login");
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("auth_token");
+      }
+      window.location.href = "/login";
     } catch (err) {
       console.error("Failed to log out:", err);
     } finally {

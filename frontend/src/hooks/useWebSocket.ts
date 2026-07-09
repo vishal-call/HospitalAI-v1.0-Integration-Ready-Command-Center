@@ -20,6 +20,14 @@ export function useWebSocket(url: string, onMessage?: (data: unknown) => void) {
     if (wsRef.current) return;
 
     let targetUrl = url;
+    
+    // Fallback query parameter authentication for cross-domain WebSockets
+    const token = typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;
+    if (token) {
+      const separator = targetUrl.includes("?") ? "&" : "?";
+      targetUrl = `${targetUrl}${separator}token=${encodeURIComponent(token)}`;
+    }
+
     if (lastTimestampRef.current) {
       const separator = targetUrl.includes("?") ? "&" : "?";
       targetUrl = `${targetUrl}${separator}last_received_timestamp=${encodeURIComponent(lastTimestampRef.current)}`;

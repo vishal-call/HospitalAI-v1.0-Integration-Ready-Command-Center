@@ -1241,7 +1241,11 @@ async def websocket_endpoint(websocket: WebSocket, db: AsyncSession = Depends(ge
     # Secure WebSocket handshake upgrade using HttpOnly token cookie
     token = websocket.cookies.get("auth_token")
     if not token:
-        logger.warning("WebSocket connection rejected: Missing auth_token cookie.")
+        # Fallback to query parameter for cross-domain clients where cookie is blocked
+        token = websocket.query_params.get("token")
+        
+    if not token:
+        logger.warning("WebSocket connection rejected: Missing auth_token token.")
         await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
         return
         

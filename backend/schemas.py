@@ -15,6 +15,7 @@ class UserCreate(UserBase):
 class UserResponse(UserBase):
     id: int
     is_active: bool
+    token: Optional[str] = None
 
     class Config:
         from_attributes = True
