@@ -596,6 +596,43 @@ async def get_patients(db: AsyncSession = Depends(get_db)):
     """Retrieve all currently active admitted patients."""
     return await crud.get_patients(db)
 
+@app.get("/api/patients/{id}")
+async def get_patient_detail(id: int, db: AsyncSession = Depends(get_db)):
+    """Retrieve detailed clinical information for a single patient, including their latest score record."""
+    from sqlalchemy import select
+    from sqlalchemy.orm import selectinload
+    import models
+    from fastapi.encoders import jsonable_encoder
+
+    # Query patient
+    patient_res = await db.execute(
+        select(models.Patient)
+        .where(models.Patient.id == id)
+    )
+    patient = patient_res.scalar_one_or_none()
+    if not patient:
+        raise HTTPException(status_code=404, detail="Patient not found")
+
+    # Query latest score record with explanation
+    score_res = await db.execute(
+        select(models.ScoreRecord)
+        .options(selectinload(models.ScoreRecord.explanation))
+        .where(models.ScoreRecord.patient_id == id)
+        .order_by(models.ScoreRecord.created_at.desc())
+        .limit(1)
+    )
+    score_record = score_res.scalar_one_or_none()
+
+    # Combine into a custom dict response
+    patient_data = jsonable_encoder(patient)
+    if score_record:
+        patient_data["score_record"] = jsonable_encoder(score_record)
+    else:
+        patient_data["score_record"] = None
+
+    return patient_data
+
+
 @app.post("/api/patients/admit", response_model=schemas.PatientResponse)
 async def admit_patient(
     payload: schemas.PatientAdmitPayload, 

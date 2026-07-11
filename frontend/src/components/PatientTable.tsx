@@ -4,6 +4,7 @@ import { Search, ArrowUpDown, ShieldAlert, Heart, Activity, ClipboardList, Loade
 import Link from "next/link";
 import ClinicalTimeline from "./ClinicalTimeline";
 import VitalsForm from "./VitalsForm";
+import PatientDetailsModal from "./PatientDetailsModal";
 
 interface PatientTableProps {
   patients: Patient[];
@@ -18,6 +19,7 @@ export default function PatientTable({ patients, onVitalsLogged }: PatientTableP
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
 
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
+  const [selectedDetailPatient, setSelectedDetailPatient] = useState<Patient | null>(null);
   const [expandedPatientId, setExpandedPatientId] = useState<number | null>(null);
   const [vitalsLoading, setVitalsLoading] = useState(false);
   const [vitalsError, setVitalsError] = useState<string | null>(null);
@@ -212,13 +214,13 @@ export default function PatientTable({ patients, onVitalsLogged }: PatientTableP
                         <ClipboardList className="h-3.5 w-3.5" />
                         Vitals
                       </button>
-                      <Link
-                        href={`/patients/${patient.id}`}
+                      <button
+                        onClick={() => setSelectedDetailPatient(patient)}
                         className="inline-flex items-center gap-1 py-1.5 px-3 bg-slate-950 border border-slate-800 hover:bg-slate-900 text-slate-300 hover:text-indigo-400 font-semibold text-xs rounded-lg transition-all"
                       >
                         Details
                         <ChevronRight className="h-3.5 w-3.5" />
-                      </Link>
+                      </button>
                     </td>
                   </tr>
                   {expandedPatientId === patient.id && (
@@ -257,6 +259,13 @@ export default function PatientTable({ patients, onVitalsLogged }: PatientTableP
             />
           </div>
         </div>
+      )}
+      {/* Patient Details Modal */}
+      {selectedDetailPatient && (
+        <PatientDetailsModal
+          patient={selectedDetailPatient}
+          onClose={() => setSelectedDetailPatient(null)}
+        />
       )}
     </div>
   );
