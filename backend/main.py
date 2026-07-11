@@ -179,9 +179,11 @@ app.include_router(auth_router)
 from routes.scenario_routes import router as scenario_router
 from routes.integration_routes import router as integration_router
 from routes.reports_router import router as reports_router
+from routes.interop_router import router as interop_router
 app.include_router(scenario_router)
 app.include_router(integration_router)
 app.include_router(reports_router)
+app.include_router(interop_router)
 
 # WebSocket Connection Manager for live dashboard updates
 class ConnectionManager:

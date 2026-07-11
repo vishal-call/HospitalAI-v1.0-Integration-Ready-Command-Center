@@ -6,7 +6,7 @@ import os
 
 def handle(client):
     print("New connection!")
-    p = subprocess.Popen(['wsl', '-u', 'root', 'stdbuf', '-o0', '-i0', 'nc', '127.0.0.1', '5433'], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+    p = subprocess.Popen(['wsl', '-d', 'Ubuntu', '-u', 'root', 'stdbuf', '-o0', '-i0', 'nc', '127.0.0.1', '5433'], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
     
     def r():
         while True:

@@ -20,6 +20,14 @@ export default function LoginPage() {
         setDiagError(savedError);
         sessionStorage.removeItem("last_auth_error");
       }
+
+      // Capture SSO callback token from URL query parameters
+      const urlParams = new URLSearchParams(window.location.search);
+      const token = urlParams.get("token");
+      if (token) {
+        localStorage.setItem("auth_token", token);
+        window.location.href = "/";
+      }
     }
   }, []);
 
@@ -186,6 +194,26 @@ export default function LoginPage() {
               ) : (
                 "Authorize Access"
               )}
+            </button>
+
+            <div className="relative flex py-4 items-center">
+              <div className="flex-grow border-t border-slate-800"></div>
+              <span className="flex-shrink mx-4 text-slate-500 text-[10px] uppercase tracking-wider font-semibold">or</span>
+              <div className="flex-grow border-t border-slate-800"></div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => {
+                let apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+                if (apiBase.endsWith("/")) {
+                  apiBase = apiBase.slice(0, -1);
+                }
+                window.location.href = `${apiBase}/api/auth/sso/login`;
+              }}
+              className="w-full flex items-center justify-center py-2.5 px-4 rounded-lg bg-slate-900 border border-slate-800 text-slate-200 text-sm font-semibold hover:bg-slate-800/80 hover:border-slate-700 transition-all duration-200"
+            >
+              Login with Hospital ID (SSO)
             </button>
           </form>
         </div>
