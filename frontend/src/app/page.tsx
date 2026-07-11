@@ -117,7 +117,12 @@ export default function DashboardPage() {
       reset();
       await loadData();
     } catch (err: any) {
-      setAdmitError(err.message || "Admission request failed.");
+      const errMsg = err.message || "";
+      if (errMsg.includes("Failed to fetch")) {
+        setAdmitError("Network Error: Could not reach the server. Please check your internet connection or CORS configuration.");
+      } else {
+        setAdmitError(errMsg || "Admission request failed.");
+      }
     } finally {
       setAdmitLoading(false);
     }

@@ -147,6 +147,7 @@ frontend_url_env = os.getenv("FRONTEND_URL", "http://localhost:3000")
 env_origins = [origin.strip() for origin in frontend_url_env.split(",") if origin.strip()]
 origins = []
 for origin in env_origins:
+    origin = origin.rstrip("/")
     if "://" in origin:
         parts = origin.split("://", 1)
         scheme = parts[0]
@@ -168,9 +169,10 @@ for lo in local_origins:
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
+    allow_origin_regex=r"https://.*\.vercel\.app",
     allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD"],
-    allow_headers=["Content-Type", "Authorization", "Accept", "Origin", "X-Requested-With", "X-Correlation-ID"],
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 # Include Authentication Routes

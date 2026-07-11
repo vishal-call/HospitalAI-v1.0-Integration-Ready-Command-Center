@@ -145,9 +145,19 @@ export interface ClinicalEvent {
 }
 
 let rawBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-if (rawBaseUrl.endsWith("/")) {
-  rawBaseUrl = rawBaseUrl.slice(0, -1);
+
+// Sanitize URL:
+// 1. Strip trailing slashes
+rawBaseUrl = rawBaseUrl.replace(/\/+$/, "");
+
+// 2. Ensure HTTPS unless it is localhost/127.0.0.1
+const isLocalhost = rawBaseUrl.includes("localhost") || rawBaseUrl.includes("127.0.0.1") || rawBaseUrl.includes("::1");
+if (!isLocalhost && rawBaseUrl.startsWith("http://")) {
+  rawBaseUrl = rawBaseUrl.replace("http://", "https://");
+} else if (!isLocalhost && !rawBaseUrl.startsWith("https://")) {
+  rawBaseUrl = "https://" + rawBaseUrl;
 }
+
 export const API_BASE_URL = rawBaseUrl;
 
 async function authFetch(url: string, options: RequestInit = {}): Promise<Response> {
