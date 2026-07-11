@@ -61,8 +61,8 @@ async def login(
         httponly=True,
         max_age=3600 * 24,  # 1 day expiration
         expires=3600 * 24,
-        samesite=samesite_flag,
-        secure=secure_flag
+        samesite="none",
+        secure=True
     )
     
     user.token = access_token
@@ -225,7 +225,7 @@ async def sso_callback(
         httponly=True,
         max_age=3600 * 24,
         expires=3600 * 24,
-        samesite=samesite_flag,
-        secure=secure_flag
+        samesite="none",
+        secure=True
     )
     return response

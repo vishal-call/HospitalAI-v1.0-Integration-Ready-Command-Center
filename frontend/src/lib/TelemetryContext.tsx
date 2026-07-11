@@ -13,7 +13,8 @@ import {
   Patient, 
   RecommendationDetail, 
   Alert, 
-  PartnerHospital 
+  PartnerHospital,
+  API_BASE_URL
 } from "./api";
 import { useWebSocket } from "@/hooks/useWebSocket";
 import { useAuth } from "./AuthContext";
@@ -190,7 +191,7 @@ export function TelemetryProvider({ children }: { children: React.ReactNode }) {
       setIsHistorical(true);
       setHistoricalTime(timestamp);
 
-      const response = await fetch(`http://localhost:8000/api/state/snapshot?timestamp=${encodeURIComponent(timestamp)}`);
+      const response = await fetch(`${API_BASE_URL}/api/state/snapshot?timestamp=${encodeURIComponent(timestamp)}`, { credentials: 'include' });
       if (!response.ok) {
         throw new Error("Failed to load historical snapshot from server.");
       }
