@@ -15,6 +15,7 @@ router = APIRouter(prefix="/api/auth", tags=["Authentication"])
 
 @router.post("/login", response_model=schemas.UserResponse)
 async def login(
+    request: Request,
     payload: schemas.LoginPayload,
     response: Response,
     db: AsyncSession = Depends(get_db)
@@ -49,10 +50,13 @@ async def login(
     access_token = create_access_token(data={"sub": user.username})
     
     # Determine secure and samesite flags based on environment
-    import os
-    is_prod = os.getenv("DATABASE_URL") is not None
-    samesite_flag = "none" if is_prod else "lax"
-    secure_flag = True if is_prod else False
+    is_secure = (
+        request.url.scheme == "https" or 
+        request.headers.get("x-forwarded-proto") == "https" or 
+        os.getenv("DATABASE_URL") is not None
+    )
+    samesite_flag = "none" if is_secure else "lax"
+    secure_flag = True if is_secure else False
     
     # Set HttpOnly Cookie
     response.set_cookie(
@@ -61,8 +65,8 @@ async def login(
         httponly=True,
         max_age=3600 * 24,  # 1 day expiration
         expires=3600 * 24,
-        samesite="none",
-        secure=True
+        samesite=samesite_flag,
+        secure=secure_flag
     )
     
     user.token = access_token
@@ -110,6 +114,7 @@ async def sso_login(request: Request):
 
 @router.get("/sso/callback")
 async def sso_callback(
+    request: Request,
     code: str,
     state: Optional[str] = None,
     db: AsyncSession = Depends(get_db)
@@ -210,9 +215,13 @@ async def sso_callback(
             
     internal_token = create_access_token(data={"sub": user.username})
     
-    is_prod = os.getenv("DATABASE_URL") is not None
-    samesite_flag = "none" if is_prod else "lax"
-    secure_flag = True if is_prod else False
+    is_secure = (
+        request.url.scheme == "https" or 
+        request.headers.get("x-forwarded-proto") == "https" or 
+        os.getenv("DATABASE_URL") is not None
+    )
+    samesite_flag = "none" if is_secure else "lax"
+    secure_flag = True if is_secure else False
     
     # Strip any trailing slash from frontend_url
     if frontend_url.endswith("/"):
@@ -225,7 +234,7 @@ async def sso_callback(
         httponly=True,
         max_age=3600 * 24,
         expires=3600 * 24,
-        samesite="none",
-        secure=True
+        samesite=samesite_flag,
+        secure=secure_flag
     )
     return response
