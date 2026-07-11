@@ -19,7 +19,12 @@ export default function PatientDetailsModal({ patient, onClose }: PatientDetails
         const data = await fetchPatient(patient.id);
         setDetailedPatient(data);
       } catch (err: any) {
-        setError(err.message || "Failed to load patient dossier.");
+        const errMsg = err.message || "";
+        if (errMsg.includes("Failed to fetch")) {
+          setError("Network Error: Could not reach the server. Please check your Vercel Environment Variables and Render CORS configuration.");
+        } else {
+          setError(errMsg || "Failed to load patient dossier.");
+        }
       } finally {
         setLoading(false);
       }

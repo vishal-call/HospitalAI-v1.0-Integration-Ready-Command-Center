@@ -119,7 +119,7 @@ export default function DashboardPage() {
     } catch (err: any) {
       const errMsg = err.message || "";
       if (errMsg.includes("Failed to fetch")) {
-        setAdmitError("Network Error: Could not reach the server. Please check your internet connection or CORS configuration.");
+        setAdmitError("Network Error: Could not reach the server. Please check your Vercel Environment Variables and Render CORS configuration.");
       } else {
         setAdmitError(errMsg || "Admission request failed.");
       }

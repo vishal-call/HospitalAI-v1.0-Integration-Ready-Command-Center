@@ -144,7 +144,11 @@ export interface ClinicalEvent {
   actor_id?: number | null;
 }
 
-let rawBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+let rawBaseUrl = process.env.NEXT_PUBLIC_API_URL;
+if (!rawBaseUrl) {
+  console.warn("Warning: NEXT_PUBLIC_API_URL environment variable is missing. Falling back to default 'http://localhost:8000'.");
+  rawBaseUrl = "http://localhost:8000";
+}
 
 // Sanitize URL:
 // 1. Strip trailing slashes
