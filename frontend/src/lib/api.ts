@@ -739,3 +739,104 @@ export async function revokeApiKey(id: number): Promise<void> {
   });
   if (!res.ok) throw new Error("Failed to revoke API key");
 }
+
+// --- Administrative and Telemetry Services ---
+
+import { AnalyticsSummary } from "../types/admin";
+
+export interface WardCreatePayload {
+  name: string;
+  type: WardType;
+  capacity: number;
+}
+
+export interface BedCreatePayload {
+  ward_id: number;
+  bed_number: string;
+  status: BedStatus;
+}
+
+export async function fetchAnalyticsSummary(): Promise<AnalyticsSummary> {
+  const res = await authFetch(`${API_BASE_URL}/api/admin/analytics/summary`, { cache: 'no-store' });
+  if (!res.ok) {
+    throw new Error("Failed to fetch analytics summary");
+  }
+  return res.json();
+}
+
+export async function createWard(payload: WardCreatePayload): Promise<Ward> {
+  const res = await authFetch(`${API_BASE_URL}/api/admin/wards`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  });
+  
+  if (!res.ok) {
+    const errData = await res.json().catch(() => ({}));
+    const message = errData.detail || "Failed to create ward";
+    throw new Error(message);
+  }
+  
+  return res.json();
+}
+
+export async function deleteWard(id: number): Promise<void> {
+  const res = await authFetch(`${API_BASE_URL}/api/admin/wards/${id}`, {
+    method: "DELETE"
+  });
+  
+  if (!res.ok) {
+    if (res.status === 400 || res.status === 409) {
+      throw new Error("Operation Blocked: Active dependencies exist.");
+    }
+    const errData = await res.json().catch(() => ({}));
+    throw new Error(errData.detail || "Failed to delete ward");
+  }
+}
+
+export async function createBed(payload: BedCreatePayload): Promise<Bed> {
+  const res = await authFetch(`${API_BASE_URL}/api/admin/beds`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  });
+  
+  if (!res.ok) {
+    const errData = await res.json().catch(() => ({}));
+    const message = errData.detail || "Failed to create bed";
+    throw new Error(message);
+  }
+  
+  return res.json();
+}
+
+export async function deleteBed(id: number): Promise<void> {
+  const res = await authFetch(`${API_BASE_URL}/api/admin/beds/${id}`, {
+    method: "DELETE"
+  });
+  
+  if (!res.ok) {
+    if (res.status === 400 || res.status === 409) {
+      throw new Error("Operation Blocked: Active dependencies exist.");
+    }
+    const errData = await res.json().catch(() => ({}));
+    throw new Error(errData.detail || "Failed to delete bed");
+  }
+}
+
+export async function updateStaffRole(email: string, role: UserRole): Promise<User> {
+  const res = await authFetch(`${API_BASE_URL}/api/admin/staff/role`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, role })
+  });
+  
+  if (!res.ok) {
+    const errData = await res.json().catch(() => ({}));
+    const message = errData.detail || "Failed to update staff role";
+    throw new Error(message);
+  }
+  
+  return res.json();
+}
+
