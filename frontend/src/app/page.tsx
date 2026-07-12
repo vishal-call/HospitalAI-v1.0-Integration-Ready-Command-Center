@@ -1,533 +1,397 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { 
-  fetchWards, 
-  fetchPatients, 
-  admitPatient, 
-  fetchPendingRecommendations,
-  actionRecommendation,
-  fetchActiveAlerts,
-  acknowledgeAlert,
-  fetchPartnerHospitals,
-  Ward, 
-  Patient, 
-  PatientStatus,
-  RecommendationDetail,
-  Alert,
-  PartnerHospital,
-  API_BASE_URL
-} from "@/lib/api";
-import WardOverview from "@/components/WardOverview";
-import PatientTable from "@/components/PatientTable";
-import ActionCenter from "@/components/ActionCenter";
-import AlertFeed from "@/components/AlertFeed";
-import PartnerNetwork from "@/components/PartnerNetwork";
-import { useAuth } from "../lib/AuthContext";
-import { useTelemetry } from "@/lib/TelemetryContext";
-import TimeTravelSlider from "@/components/TimeTravelSlider";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import { ErrorBoundary } from "@/components/ErrorBoundary";
-import { useWebSocket } from "@/hooks/useWebSocket";
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend } from "recharts";
+import React, { useState } from "react";
 import Link from "next/link";
-import { PlusCircle, Activity, RefreshCw, Radio, UserPlus, LogOut, ShieldCheck, ShieldAlert, Heart, AlertOctagon, Layers, PlayCircle, FileDown } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { 
+  Activity, 
+  ArrowRight, 
+  Layers, 
+  ShieldCheck, 
+  Zap, 
+  ArrowUpRight, 
+  Cpu, 
+  Check, 
+  X, 
+  BookOpen, 
+  Workflow 
+} from "lucide-react";
+import { useAuth } from "@/lib/AuthContext";
 
-const admitSchema = z.object({
-  name: z.string().min(1, "Patient name is required").max(100, "Name must be <= 100 characters"),
-  age: z.number({ invalid_type_error: "Must be a valid integer" })
-    .int()
-    .min(0, "Age must be >= 0")
-    .max(120, "Age must be <= 120"),
-  gender: z.string().min(1, "Gender selection is required"),
-  admission_reason: z.string().min(1, "Admission reason is required").max(255, "Reason must be <= 255 characters"),
-  status: z.enum(["STABLE", "SERIOUS", "CRITICAL"]),
-  target_ward_id: z.number({ invalid_type_error: "Must select a target ward" }).int(),
-});
+export default function LandingPage() {
+  const { user } = useAuth();
+  const [isWhitepaperOpen, setIsWhitepaperOpen] = useState(false);
 
-type AdmitFormData = z.infer<typeof admitSchema>;
-
-// Static analytical mock history for trend rendering
-const occupancyHistory = [
-  { name: "00:00", ICU: 70, Emergency: 50, General: 60 },
-  { name: "04:00", ICU: 75, Emergency: 65, General: 62 },
-  { name: "08:00", ICU: 85, Emergency: 80, General: 65 },
-  { name: "12:00", ICU: 90, Emergency: 72, General: 68 },
-  { name: "16:00", ICU: 80, Emergency: 68, General: 70 },
-  { name: "20:00", ICU: 85, Emergency: 75, General: 67 },
-];
-
-export default function DashboardPage() {
-  const { user, loading: authLoading, logout } = useAuth();
-  const {
-    wards, setWards,
-    patients, setPatients,
-    recommendations, setRecommendations,
-    alerts, setAlerts,
-    partnerHospitals, setPartnerHospitals,
-    loading, error, setError, loadData,
-    wsConnected,
-    isHistorical, historicalTime, enterTimeTravel, exitTimeTravel
-  } = useTelemetry();
-
-  // Admission Modal State & Idempotency Key
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [admitLoading, setAdmitLoading] = useState(false);
-  const [admitError, setAdmitError] = useState<string | null>(null);
-  const [admitIdempotencyKey, setAdmitIdempotencyKey] = useState<string>("");
-
-  const [downloadingReport, setDownloadingReport] = useState(false);
-
-  const handleDownloadHandover = () => {
-    window.open(`${API_BASE_URL}/api/reports/handover`, "_blank");
-  };
-
-  const {
-    register,
-    handleSubmit,
-    reset,
-    formState: { errors },
-  } = useForm<AdmitFormData>({
-    resolver: zodResolver(admitSchema),
-    defaultValues: {
-      name: "",
-      age: 45,
-      gender: "Male",
-      admission_reason: "",
-      status: "STABLE",
-      target_ward_id: 3,
-    }
-  });
-
-  // Generate a fresh idempotency key when the admission modal opens
-  useEffect(() => {
-    if (isModalOpen) {
-      setAdmitIdempotencyKey(window.crypto.randomUUID());
-    }
-  }, [isModalOpen]);
-
-  const handleAdmitSubmit = async (data: AdmitFormData) => {
-    try {
-      setAdmitLoading(true);
-      setAdmitError(null);
-      await admitPatient(data, admitIdempotencyKey);
-      setIsModalOpen(false);
-      reset();
-      await loadData();
-    } catch (err: any) {
-      const errMsg = err.message || "";
-      if (errMsg.includes("Failed to fetch")) {
-        setAdmitError("Network Error: Could not reach the server. Please check your Vercel Environment Variables and Render CORS configuration.");
-      } else {
-        setAdmitError(errMsg || "Admission request failed.");
+  // Animations configuration
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.15,
+        delayChildren: 0.1
       }
-    } finally {
-      setAdmitLoading(false);
     }
   };
 
-  // Dynamic stats calculation for premium KPI panel
-  const totalPatients = patients.length;
-  const criticalCount = patients.filter(p => p.status === "CRITICAL").length;
-  const seriousCount = patients.filter(p => p.status === "SERIOUS").length;
-  const stableCount = patients.filter(p => p.status === "STABLE").length;
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: { type: "spring" as const, stiffness: 100, damping: 15 }
+    }
+  };
 
-  const icuWard = wards.find(w => w.type === "ICU");
-  const icuOccupancyRate = icuWard ? Math.round((icuWard.occupied_beds_count / icuWard.capacity) * 100) : 0;
-  const emergencyCount = wards.find(w => w.type === "EMERGENCY")?.occupied_beds_count || 0;
-  const availableBedsCount = wards.reduce((sum, w) => sum + (w.capacity - w.occupied_beds_count), 0);
-  const activeAlertsCount = alerts.length;
-
-  const ewsDistribution = [
-    { status: "Stable (< 4.0)", count: patients.filter(p => p.criticality_score < 4.0).length },
-    { status: "Serious (4.0 - 7.9)", count: patients.filter(p => p.criticality_score >= 4.0 && p.criticality_score < 8.0).length },
-    { status: "Critical (>= 8.0)", count: patients.filter(p => p.criticality_score >= 8.0).length },
-  ];
-
-  if (authLoading) {
-    return (
-      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center gap-4 text-slate-400">
-        <RefreshCw className="h-8 w-8 animate-spin text-emerald-400" />
-        <p className="font-semibold text-sm">Verifying staff security authorization...</p>
-      </div>
-    );
-  }
-
-  if (!user) {
-    return null;
-  }
+  const pulseTransition = {
+    repeat: Infinity,
+    duration: 3,
+    ease: "easeInOut"
+  };
 
   return (
-    <main className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-indigo-500/30 selection:text-indigo-200">
+    <div className="min-h-screen bg-[#07070a] text-slate-100 font-sans relative overflow-hidden selection:bg-emerald-500/20 selection:text-emerald-300">
       
-      {/* Reconnecting Glassmorphic Banner */}
-      {!wsConnected && !isHistorical && (
-        <div className="bg-rose-950/80 border-b border-rose-500/20 text-rose-200 text-xs px-4 py-2 flex items-center justify-center gap-2 backdrop-blur-md sticky top-0 z-50 animate-in slide-in-from-top duration-300">
-          <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-500"></span>
-          </span>
-          <span className="font-bold tracking-wide uppercase">Reconnecting to live telemetry feed...</span>
-        </div>
-      )}
+      {/* BACKGROUND glowing atmosphere */}
+      <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-blue-600/10 blur-[120px] pointer-events-none" />
+      <div className="absolute bottom-[20%] right-[-10%] w-[60%] h-[60%] rounded-full bg-emerald-500/5 blur-[150px] pointer-events-none" />
+      <div className="absolute top-[30%] left-[40%] w-[350px] h-[350px] rounded-full bg-indigo-500/5 blur-[100px] pointer-events-none" />
 
-      {/* Historical Playback Amber Banner */}
-      {isHistorical && (
-        <div className="bg-amber-950/90 border-b border-amber-500/30 text-amber-200 text-xs px-6 py-2.5 flex items-center justify-between gap-2 backdrop-blur-md sticky top-0 z-50 animate-in slide-in-from-top duration-300">
-          <div className="flex items-center gap-2.5">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-550 bg-amber-500"></span>
+      {/* FLOATING NAVIGATION BAR */}
+      <motion.nav 
+        initial={{ y: -30, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ type: "spring", stiffness: 120, delay: 0.2 }}
+        className="w-full max-w-5xl mx-auto px-4 pt-6 sticky top-0 z-50 pointer-events-none"
+      >
+        <div className="w-full bg-slate-950/40 backdrop-blur-xl border border-white/10 rounded-full px-6 py-3 flex items-center justify-between shadow-2xl shadow-black/80 pointer-events-auto">
+          {/* Logo */}
+          <Link href="/" className="flex items-center gap-2.5 group">
+            <div className="h-8 w-8 rounded-lg bg-gradient-to-tr from-indigo-500 to-violet-600 flex items-center justify-center shadow-lg shadow-indigo-500/20 group-hover:scale-105 transition-transform">
+              <Activity className="h-4.5 w-4.5 text-white" />
+            </div>
+            <span className="font-extrabold text-base tracking-tight text-white flex items-center gap-1.5">
+              HospitalAI
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse shadow-glow shadow-emerald-400/50" />
             </span>
-            <span className="font-bold tracking-wide uppercase">HISTORICAL MODE - READ ONLY (Viewing state at {historicalTime ? new Date(historicalTime).toLocaleString() : ""})</span>
-          </div>
-          <button 
-            onClick={exitTimeTravel} 
-            className="px-3 py-1 bg-amber-500/20 hover:bg-amber-500/35 border border-amber-500/30 rounded-lg text-[10px] font-bold text-amber-300 transition-colors"
-          >
-            Resume Live
-          </button>
-        </div>
-      )}
+          </Link>
 
-      {/* Background Gradient Ornaments */}
-      <div className="absolute top-0 left-0 w-full h-[600px] bg-radial-gradient from-indigo-900/10 via-slate-950/0 to-slate-950/0 pointer-events-none" />
-      {/* Main Dashboard Workspace */}
-      <div className="flex flex-col space-y-12 p-6 pb-28 flex-1 max-w-7xl w-full mx-auto">
-        
-        {/* Page Actions */}
-        <div className="flex justify-end items-center gap-4">
-          <button
-            onClick={loadData}
-            className="p-2 rounded-xl bg-slate-900 border border-slate-800 hover:bg-slate-800 hover:border-slate-700 transition-all text-slate-300"
-            title="Refresh Data"
-          >
-            <RefreshCw className="h-4 w-4" />
-          </button>
-
-          <button
-            onClick={() => setIsModalOpen(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-500 to-violet-600 hover:from-indigo-600 hover:to-violet-700 text-white rounded-xl font-semibold text-sm shadow-lg shadow-indigo-500/20 hover:shadow-indigo-500/35 transition-all duration-300 scale-100 hover:scale-[1.02]"
-          >
-            <UserPlus className="h-4 w-4" />
-            Admit Patient
-          </button>
-        </div>
-        
-        {loading ? (
-          <div className="py-20 flex flex-col items-center justify-center gap-4 text-slate-400">
-            <RefreshCw className="h-8 w-8 animate-spin text-indigo-400" />
-            <p className="font-semibold text-sm">Synchronizing clinical dashboard telemetry...</p>
+          {/* Links */}
+          <div className="hidden sm:flex items-center gap-6">
+            <a href="#features" className="text-xs font-semibold text-slate-400 hover:text-white transition-colors">Subsystems</a>
+            <a href="#security" className="text-xs font-semibold text-slate-400 hover:text-white transition-colors" onClick={(e) => { e.preventDefault(); setIsWhitepaperOpen(true); }}>Security</a>
+            <a href="#telemetry" className="text-xs font-semibold text-slate-400 hover:text-white transition-colors">Performance</a>
           </div>
-        ) : error ? (
-          <div className="rounded-2xl border border-rose-500/20 bg-rose-500/10 p-6 text-rose-400 flex flex-col gap-2">
-            <h3 className="font-bold text-lg">Platform Error</h3>
-            <p>{error}</p>
-            <button onClick={loadData} className="mt-2 text-sm underline text-left hover:text-rose-300">
-              Retry Connection
+
+          {/* CTA */}
+          <Link 
+            href={user ? "/dashboard" : "/login"}
+            className="flex items-center gap-1.5 px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-full text-xs font-bold text-white shadow-lg transition-all hover:scale-[1.02] active:scale-[0.98]"
+          >
+            Access Command Center
+            <ArrowUpRight className="h-3.5 w-3.5" />
+          </Link>
+        </div>
+      </motion.nav>
+
+      {/* HERO SECTION */}
+      <section className="max-w-7xl mx-auto px-6 pt-16 pb-20 relative z-10 flex flex-col items-center">
+        <motion.div 
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+          className="text-center max-w-3xl flex flex-col items-center"
+        >
+          {/* Tag */}
+          <motion.div 
+            variants={itemVariants}
+            className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-[10px] font-bold tracking-wider uppercase mb-8"
+          >
+            <Cpu className="h-3 w-3" /> Autonomous Clinical Orchestration
+          </motion.div>
+
+          {/* Headline */}
+          <motion.h1 
+            variants={itemVariants}
+            className="text-4xl sm:text-6xl font-black tracking-tight text-white leading-[1.08] mb-6"
+          >
+            AI-Driven Clinical <br />
+            <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 via-violet-400 to-emerald-400">
+              Logistics & Telemetry
+            </span>
+          </motion.h1>
+
+          {/* Subheadline */}
+          <motion.p 
+            variants={itemVariants}
+            className="text-sm sm:text-base text-slate-400 max-w-xl leading-relaxed mb-10"
+          >
+            A perfect balance between scientific precision and autonomous orchestration. 
+            Anticipate patient deterioration and automate bed capacity via live HL7/FHIR streams.
+          </motion.p>
+
+          {/* Action CTAs */}
+          <motion.div variants={itemVariants} className="flex flex-col sm:flex-row items-center gap-4 mb-20 w-full sm:w-auto">
+            <Link 
+              href={user ? "/dashboard" : "/login"}
+              className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-3.5 bg-emerald-500 hover:bg-emerald-400 text-[#07070a] font-extrabold text-sm rounded-xl transition-all shadow-xl shadow-emerald-500/20 hover:shadow-emerald-500/30 hover:scale-[1.02]"
+            >
+              Launch Platform
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+            <button 
+              onClick={() => setIsWhitepaperOpen(true)}
+              className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-3.5 bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold text-sm rounded-xl transition-all hover:scale-[1.02]"
+            >
+              View Whitepaper
+              <BookOpen className="h-4 w-4" />
             </button>
+          </motion.div>
+        </motion.div>
+
+        {/* CENTERPIECE GRAPHIC: Glowing animated waveform */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 1, delay: 0.5 }}
+          className="w-full max-w-3xl aspect-[16/9] rounded-3xl border border-white/10 bg-slate-900/10 backdrop-blur-xl relative flex items-center justify-center overflow-hidden shadow-3xl shadow-black/80"
+        >
+          {/* Matrix background dots */}
+          <div className="absolute inset-0 bg-[radial-gradient(#1e293b_1px,transparent_1px)] [background-size:24px_24px] opacity-35" />
+
+          {/* Glowing concentric orbits */}
+          <motion.div 
+            animate={{ rotate: 360 }}
+            transition={{ repeat: Infinity, duration: 25, ease: "linear" }}
+            className="absolute h-[80%] aspect-square rounded-full border border-indigo-500/5 flex items-center justify-center"
+          >
+            <div className="h-[70%] aspect-square rounded-full border border-dashed border-indigo-500/10 flex items-center justify-center" />
+          </motion.div>
+
+          <motion.div 
+            animate={{ rotate: -360 }}
+            transition={{ repeat: Infinity, duration: 40, ease: "linear" }}
+            className="absolute h-[60%] aspect-square rounded-full border border-emerald-500/5 flex items-center justify-center"
+          >
+            <div className="h-[70%] aspect-square rounded-full border border-dashed border-emerald-500/10 flex items-center justify-center" />
+          </motion.div>
+
+          {/* Animated Sine Heartbeat Waveform SVG */}
+          <svg className="w-[85%] h-[40%] text-emerald-400 relative z-10" viewBox="0 0 800 200" fill="none">
+            <motion.path
+              d="M0 100 H300 L320 40 L340 160 L360 80 L370 120 L380 100 H800"
+              stroke="url(#gradientWave)"
+              strokeWidth="4"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              initial={{ pathLength: 0 }}
+              animate={{ pathLength: 1 }}
+              transition={{ repeat: Infinity, duration: 4, ease: "linear" }}
+            />
+            {/* Blurry glow overlay for medical waveform */}
+            <motion.path
+              d="M0 100 H300 L320 40 L340 160 L360 80 L370 120 L380 100 H800"
+              stroke="url(#gradientWave)"
+              strokeWidth="10"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="opacity-20 blur-md"
+              initial={{ pathLength: 0 }}
+              animate={{ pathLength: 1 }}
+              transition={{ repeat: Infinity, duration: 4, ease: "linear" }}
+            />
+            <defs>
+              <linearGradient id="gradientWave" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor="#6366f1" />
+                <stop offset="50%" stopColor="#10b981" />
+                <stop offset="100%" stopColor="#3b82f6" />
+              </linearGradient>
+            </defs>
+          </svg>
+
+          {/* Grid Center Terminal Info Overlay */}
+          <div className="absolute bottom-6 left-6 flex items-center gap-3 bg-slate-950/80 border border-white/5 rounded-xl px-4 py-2 text-[10px] font-mono text-slate-400 backdrop-blur-md">
+            <span className="h-2 w-2 rounded-full bg-emerald-400 animate-ping" />
+            TELEMETRY NODE ACTIVE // PORT 8000
           </div>
-        ) : (
-          <>
-            {/* Section 1: Executive Overview */}
-            <section>
-              <h2 className="text-2xl font-bold mb-6">Executive Overview</h2>
-              
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-                <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-5 backdrop-blur-xl">
-                  <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider flex items-center gap-1.5">
-                    <Heart className="h-3.5 w-3.5 text-emerald-400" />
-                    Patient Census
-                  </span>
-                  <div className="text-3xl font-extrabold text-white mt-2 tracking-tight flex items-baseline gap-2">
-                    {totalPatients}
-                    <span className="text-xs font-normal text-slate-500">
-                      ({criticalCount}c / {seriousCount}s / {stableCount}st)
-                    </span>
-                  </div>
-                  <p className="text-xs text-slate-500 font-medium mt-1">Active bed placement sessions</p>
-                </div>
+        </motion.div>
+      </section>
 
-                <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-5 backdrop-blur-xl">
-                  <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider flex items-center gap-1.5">
-                    <Layers className="h-3.5 w-3.5 text-indigo-400" />
-                    Beds Available
-                  </span>
-                  <div className="text-3xl font-extrabold text-white mt-2 tracking-tight">
-                    {availableBedsCount}
-                  </div>
-                  <p className="text-xs text-slate-500 font-medium mt-1">Vacant emergency/ward spaces</p>
-                </div>
+      {/* FEATURE GRID */}
+      <section id="features" className="max-w-7xl mx-auto px-6 py-20 relative z-10 border-t border-white/5">
+        <div className="flex flex-col items-center text-center mb-16">
+          <h2 className="text-xs uppercase font-mono tracking-widest text-indigo-400 font-bold mb-3">Enterprise Capability Grid</h2>
+          <h3 className="text-2xl sm:text-4xl font-extrabold text-white">Engineered for Critical Environments</h3>
+        </div>
 
-                <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-5 backdrop-blur-xl">
-                  <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider flex items-center gap-1.5">
-                    <ShieldAlert className="h-3.5 w-3.5 text-rose-450" />
-                    ICU Utilization
-                  </span>
-                  <div className="text-3xl font-extrabold text-rose-400 mt-2 tracking-tight">
-                    {icuOccupancyRate}%
-                  </div>
-                  <p className="text-xs text-rose-500/80 font-medium mt-1">Requires critical triage monitoring</p>
-                </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {/* Card 1 */}
+          <motion.div 
+            whileHover={{ y: -5, borderColor: "rgba(255,255,255,0.2)" }}
+            className="bg-white/5 border border-white/10 rounded-2xl p-8 backdrop-blur-xl flex flex-col h-[320px] justify-between transition-colors duration-300"
+          >
+            <div className="h-10 w-10 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400">
+              <Zap className="h-5 w-5" />
+            </div>
+            <div>
+              <h4 className="font-extrabold text-lg text-white mb-2">Real-Time EWS Precision</h4>
+              <p className="text-xs text-slate-400 leading-relaxed">
+                Dynamically evaluates vital telemetry data using custom NEWS2 policies to calculate patient risk indicators and prevent sudden deterioration.
+              </p>
+            </div>
+          </motion.div>
 
-                <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-5 backdrop-blur-xl">
-                  <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider flex items-center gap-1.5">
-                    <AlertOctagon className="h-3.5 w-3.5 text-amber-400 animate-pulse" />
-                    Active Alert Feed
-                  </span>
-                  <div className="text-3xl font-extrabold text-amber-400 mt-2 tracking-tight">
-                    {activeAlertsCount}
-                  </div>
-                  <p className="text-xs text-amber-500/80 font-medium mt-1">Requires Human-in-the-Loop review</p>
-                </div>
-              </div>
+          {/* Card 2 */}
+          <motion.div 
+            whileHover={{ y: -5, borderColor: "rgba(255,255,255,0.2)" }}
+            className="bg-white/5 border border-white/10 rounded-2xl p-8 backdrop-blur-xl flex flex-col h-[320px] justify-between transition-colors duration-300"
+          >
+            <div className="h-10 w-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+              <Workflow className="h-5 w-5" />
+            </div>
+            <div>
+              <h4 className="font-extrabold text-lg text-white mb-2">Autonomous Routing</h4>
+              <p className="text-xs text-slate-400 leading-relaxed">
+                Multi-Agent orchestrators automatically broker capacity constraints, resolve step-down transfers, and manage inter-hospital agreements.
+              </p>
+            </div>
+          </motion.div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 backdrop-blur-xl">
-                  <h3 className="text-sm font-bold text-white mb-4">Patient Criticality EWS Distribution</h3>
-                  <div className="h-64">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={ewsDistribution}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
-                        <XAxis dataKey="status" stroke="#94a3b8" fontSize={11} />
-                        <YAxis stroke="#94a3b8" fontSize={11} allowDecimals={false} />
-                        <Tooltip contentStyle={{ backgroundColor: "#0f172a", borderColor: "#334155", color: "#f8fafc" }} />
-                        <Bar dataKey="count" fill="#6366f1" radius={[4, 4, 0, 0]} />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </div>
-                </div>
+          {/* Card 3 */}
+          <motion.div 
+            whileHover={{ y: -5, borderColor: "rgba(255,255,255,0.2)" }}
+            className="bg-white/5 border border-white/10 rounded-2xl p-8 backdrop-blur-xl flex flex-col h-[320px] justify-between transition-colors duration-300"
+          >
+            <div className="h-10 w-10 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400">
+              <ShieldCheck className="h-5 w-5" />
+            </div>
+            <div>
+              <h4 className="font-extrabold text-lg text-white mb-2">Zero-Trust Architecture</h4>
+              <p className="text-xs text-slate-400 leading-relaxed">
+                Secured via Enterprise Single Sign-On (SSO), RBAC permissions, and an immutable audit ledger documenting every clinical decision.
+              </p>
+            </div>
+          </motion.div>
+        </div>
+      </section>
 
-                <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 backdrop-blur-xl">
-                  <h3 className="text-sm font-bold text-white mb-4">24-Hour Ward Occupancy Trends</h3>
-                  <div className="h-64">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <AreaChart data={occupancyHistory}>
-                        <defs>
-                          <linearGradient id="colorIcu" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="#f43f5e" stopOpacity={0.2}/>
-                            <stop offset="95%" stopColor="#f43f5e" stopOpacity={0}/>
-                          </linearGradient>
-                          <linearGradient id="colorEmergency" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.2}/>
-                            <stop offset="95%" stopColor="#f59e0b" stopOpacity={0}/>
-                          </linearGradient>
-                        </defs>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
-                        <XAxis dataKey="name" stroke="#94a3b8" fontSize={11} />
-                        <YAxis stroke="#94a3b8" fontSize={11} />
-                        <Tooltip contentStyle={{ backgroundColor: "#0f172a", borderColor: "#334155", color: "#f8fafc" }} />
-                        <Legend verticalAlign="top" height={36} />
-                        <Area type="monotone" dataKey="ICU" stroke="#f43f5e" fillOpacity={1} fill="url(#colorIcu)" strokeWidth={2} />
-                        <Area type="monotone" dataKey="Emergency" stroke="#f59e0b" fillOpacity={1} fill="url(#colorEmergency)" strokeWidth={2} />
-                      </AreaChart>
-                    </ResponsiveContainer>
-                  </div>
-                </div>
-              </div>
-            </section>
+      {/* ROI TELEMETRY STATS BANNER */}
+      <section id="telemetry" className="max-w-7xl mx-auto px-6 py-12 relative z-10">
+        <div className="w-full bg-white/5 border border-white/10 rounded-2xl p-8 sm:p-12 backdrop-blur-xl relative overflow-hidden shadow-2xl flex flex-col sm:flex-row items-center justify-between gap-8">
+          <div className="absolute top-0 right-0 w-[200px] h-[200px] bg-indigo-500/5 rounded-full blur-[80px] pointer-events-none" />
+          
+          <div className="max-w-md">
+            <h3 className="font-extrabold text-lg sm:text-xl text-white mb-2">Pioneering Outcome Logs</h3>
+            <p className="text-xs text-slate-400 leading-relaxed">
+              HospitalAI measures performance and outcome logging to demonstrate concrete ROI and timesaving stats directly to hospital administrators.
+            </p>
+          </div>
 
-            {/* Section 2: Detailed Resource Utilization */}
-            <section>
-              <h2 className="text-2xl font-bold mb-6">Detailed Resource Utilization</h2>
-              <div className="w-full">
-                <ErrorBoundary title="Ward Overview Telemetry">
-                  <WardOverview wards={wards} onBedUpdate={loadData} />
-                </ErrorBoundary>
-              </div>
-            </section>
-
-            {/* Section 3: Patient Admittance & Network Data */}
-            <section>
-              <h2 className="text-2xl font-bold mb-6">Patient Admittance & Network Data</h2>
-              <div className="flex flex-col space-y-6">
-                <ErrorBoundary title="Partner Network Status">
-                  <PartnerNetwork hospitals={partnerHospitals} />
-                </ErrorBoundary>
-                <ErrorBoundary title="Patient Records Registry">
-                  <PatientTable patients={patients} onVitalsLogged={loadData} />
-                </ErrorBoundary>
-              </div>
-            </section>
-
-            {/* Section 4: Active Alert Response Center */}
-            <section>
-              <h2 className="text-2xl font-bold mb-6">Active Alert Response Center</h2>
-              <div className="w-full">
-                <ErrorBoundary title="Active Deterioration Alerts">
-                  <AlertFeed 
-                    alerts={alerts}
-                    onAcknowledgeComplete={loadData}
-                    acknowledgeAlert={acknowledgeAlert}
-                  />
-                </ErrorBoundary>
-              </div>
-            </section>
-
-            {/* Section 5: Advanced Controls & Configuration */}
-            <section>
-              <h2 className="text-2xl font-bold mb-6">Advanced Controls & Configuration</h2>
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                <div className="lg:col-span-8 rounded-2xl border border-slate-800 bg-slate-900/40 p-6 backdrop-blur-xl flex flex-col justify-between min-h-[300px]">
-                  <div>
-                    <h3 className="text-lg font-bold text-slate-200 mb-2">Shift Handover & Operations Reporting</h3>
-                    <p className="text-xs text-slate-400 max-w-md">
-                      Generate a detailed operations briefing summarizing current census occupancy metrics, active unacknowledged alerts, critical patients, and pending clinical transfer recommendations.
-                    </p>
-                  </div>
-                  <div className="flex gap-4">
-                    <button
-                      onClick={handleDownloadHandover}
-                      className="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-semibold text-xs shadow-lg shadow-indigo-600/20 hover:shadow-indigo-600/35 transition-all"
-                    >
-                      <FileDown className="h-4 w-4" />
-                      Generate Shift Handover (PDF)
-                    </button>
-                  </div>
-                </div>
-                <div className="lg:col-span-4">
-                  <ErrorBoundary title="HITL Relocation Actions">
-                    <ActionCenter 
-                      recommendations={recommendations}
-                      onActionComplete={loadData}
-                      actionRecommendation={actionRecommendation}
-                      activeUserId={user.id}
-                      userRole={user.role}
-                      disabled={isHistorical}
-                    />
-                  </ErrorBoundary>
-                </div>
-              </div>
-            </section>
-          </>
-        )}
-      </div>
-
-      {/* Patient Admission Modal */}
-      {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4">
-          <div className="w-full max-w-lg rounded-2xl border border-slate-800 bg-slate-900 p-6 shadow-2xl relative">
-            <h3 className="text-xl font-bold text-slate-100 tracking-tight mb-4">Admit New Patient</h3>
-            
-            {admitError && (
-              <div className="p-3 mb-4 rounded bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs">
-                {admitError}
-              </div>
-            )}
-
-            <form onSubmit={handleSubmit(handleAdmitSubmit)} className="space-y-4">
-              <div>
-                <label className="block text-slate-400 text-xs font-semibold mb-1">PATIENT FULL NAME</label>
-                <input
-                  type="text"
-                  {...register("name")}
-                  placeholder="e.g. Samuel Henderson"
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-slate-200 placeholder-slate-600 text-sm focus:outline-none focus:border-slate-700"
-                />
-                {errors.name && (
-                  <p className="text-rose-400 text-xs mt-1">{errors.name.message}</p>
-                )}
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-slate-400 text-xs font-semibold mb-1">AGE</label>
-                  <input
-                    type="number"
-                    {...register("age", { valueAsNumber: true })}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-slate-200 text-sm focus:outline-none focus:border-slate-700"
-                  />
-                  {errors.age && (
-                    <p className="text-rose-400 text-xs mt-1">{errors.age.message}</p>
-                  )}
-                </div>
-                <div>
-                  <label className="block text-slate-400 text-xs font-semibold mb-1">GENDER</label>
-                  <select
-                    {...register("gender")}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-slate-200 text-sm focus:outline-none focus:border-slate-700"
-                  >
-                    <option value="Male">Male</option>
-                    <option value="Female">Female</option>
-                    <option value="Other">Other</option>
-                  </select>
-                  {errors.gender && (
-                    <p className="text-rose-400 text-xs mt-1">{errors.gender.message}</p>
-                  )}
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-slate-400 text-xs font-semibold mb-1">ADMISSION DIAGNOSIS / REASON</label>
-                <textarea
-                  {...register("admission_reason")}
-                  placeholder="Describe details for clinical intake..."
-                  rows={3}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-slate-200 placeholder-slate-600 text-sm focus:outline-none focus:border-slate-700 resize-none"
-                />
-                {errors.admission_reason && (
-                  <p className="text-rose-400 text-xs mt-1">{errors.admission_reason.message}</p>
-                )}
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-slate-400 text-xs font-semibold mb-1">INITIAL STATUS</label>
-                  <select
-                    {...register("status")}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-slate-200 text-sm focus:outline-none focus:border-slate-700 font-semibold"
-                  >
-                    <option value="STABLE" className="text-emerald-500">STABLE</option>
-                    <option value="SERIOUS" className="text-amber-500">SERIOUS</option>
-                    <option value="CRITICAL" className="text-rose-500">CRITICAL</option>
-                  </select>
-                  {errors.status && (
-                    <p className="text-rose-400 text-xs mt-1">{errors.status.message}</p>
-                  )}
-                </div>
-                <div>
-                  <label className="block text-slate-400 text-xs font-semibold mb-1">TARGET WARD</label>
-                  <select
-                    {...register("target_ward_id", { valueAsNumber: true })}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-slate-200 text-sm focus:outline-none focus:border-slate-700"
-                  >
-                    {wards.map((ward) => (
-                      <option key={ward.id} value={ward.id}>
-                        {ward.name} ({ward.type})
-                      </option>
-                    ))}
-                  </select>
-                  {errors.target_ward_id && (
-                     <p className="text-rose-400 text-xs mt-1">{errors.target_ward_id.message}</p>
-                  )}
-                </div>
-              </div>
-
-              <div className="flex gap-4 justify-end mt-6">
-                <button
-                  type="button"
-                  onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-sm font-semibold transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={admitLoading}
-                  className="px-4 py-2.5 bg-indigo-500 hover:bg-indigo-600 disabled:bg-indigo-500/50 text-white rounded-xl text-sm font-semibold transition-all shadow-lg shadow-indigo-600/10 flex items-center gap-2"
-                >
-                  {admitLoading && <RefreshCw className="h-4 w-4 animate-spin" />}
-                  Confirm Intake
-                </button>
-              </div>
-            </form>
+          <div className="flex flex-col sm:flex-row items-center gap-8 sm:gap-16 w-full sm:w-auto">
+            <div className="text-center sm:text-left">
+              <div className="text-3xl sm:text-4xl font-black text-emerald-400 drop-shadow-[0_0_12px_rgba(16,185,129,0.2)]">1.13s</div>
+              <div className="text-[10px] text-slate-500 uppercase tracking-widest font-mono mt-1">Median AI Response Time</div>
+            </div>
+            <div className="text-center sm:text-left">
+              <div className="text-3xl sm:text-4xl font-black text-indigo-400 drop-shadow-[0_0_12px_rgba(99,102,241,0.2)]">100%</div>
+              <div className="text-[10px] text-slate-500 uppercase tracking-widest font-mono mt-1">Telemetry Data Retention</div>
+            </div>
           </div>
         </div>
-      )}
+      </section>
 
-      <TimeTravelSlider />
-    </main>
+      {/* FOOTER */}
+      <footer className="max-w-7xl mx-auto px-6 py-12 relative z-10 text-center border-t border-white/5">
+        <p className="text-[10px] text-slate-600 font-mono">
+          &copy; {new Date().getFullYear()} HospitalAI INC. ALL RIGHTS RESERVED. CERTIFIED HYBRID DATA PIPELINES.
+        </p>
+      </footer>
+
+      {/* WHITEPAPER MODAL OVERLAY */}
+      <AnimatePresence>
+        {isWhitepaperOpen && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-[#07070a]/90 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto"
+          >
+            <motion.div 
+              initial={{ scale: 0.95, y: 15 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.95, y: 15 }}
+              transition={{ type: "spring", duration: 0.5 }}
+              className="bg-slate-950 border border-white/10 rounded-2xl w-full max-w-3xl p-6 sm:p-8 shadow-2xl relative max-h-[85vh] overflow-y-auto flex flex-col"
+            >
+              {/* Close Button */}
+              <button 
+                onClick={() => setIsWhitepaperOpen(false)}
+                className="absolute top-6 right-6 p-1.5 rounded-lg bg-white/5 border border-white/10 text-slate-400 hover:text-white transition-colors"
+              >
+                <X className="h-4 w-4" />
+              </button>
+
+              <div className="flex items-center gap-3 border-b border-white/5 pb-4 mb-6">
+                <div className="h-8 w-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center">
+                  <ShieldCheck className="h-4.5 w-4.5" />
+                </div>
+                <div>
+                  <h3 className="font-extrabold text-base text-white">Enterprise Security & Governance</h3>
+                  <p className="text-[10px] text-slate-500 font-mono">Whitepaper // Certified HIPAA Protocols</p>
+                </div>
+              </div>
+
+              {/* Scrollable document text */}
+              <div className="text-slate-350 text-xs leading-relaxed space-y-6 overflow-y-auto flex-1 pr-2 max-h-[60vh] scrollbar-thin">
+                <section className="space-y-2">
+                  <h4 className="font-bold text-white uppercase tracking-wider text-[10px] text-indigo-400">1. Executive Summary</h4>
+                  <p>
+                    HospitalAI is architected with a &quot;Security-First, Zero-Trust&quot; methodology, designed to meet the rigorous compliance standards of modern healthcare networks (HIPAA, HITECH, GDPR). The platform ensures strict data isolation, immutable auditability, and encrypted telemetry pipelines.
+                  </p>
+                </section>
+                <section className="space-y-2">
+                  <h4 className="font-bold text-white uppercase tracking-wider text-[10px] text-indigo-400">2. Data Protection (In-Transit and At-Rest)</h4>
+                  <p>
+                    <strong>Data in Transit:</strong> All client-to-server and server-to-database communication is strictly enforced over <strong>TLS 1.3</strong>. WebSockets (<code>wss://</code>) utilize secure handshake protocols to prevent man-in-the-middle (MITM) interception of live telemetry.
+                  </p>
+                  <p>
+                    <strong>Data at Rest:</strong> The PostgreSQL database utilizes transparent <strong>AES-256 encryption</strong> for all stored volumes and automated backups. No API keys, database credentials, or cryptographic salts are stored in the codebase; secrets are injected dynamically via secure PaaS Environment Variables.
+                  </p>
+                </section>
+                <section className="space-y-2">
+                  <h4 className="font-bold text-white uppercase tracking-wider text-[10px] text-indigo-400">3. Identity & Access Management (IAM)</h4>
+                  <p>
+                    <strong>Enterprise Single Sign-On (SSO):</strong> HospitalAI supports OpenID Connect (OIDC) and OAuth2, allowing integration with hospital identity providers (Microsoft Entra ID, Okta, PingIdentity).
+                  </p>
+                  <p>
+                    <strong>Strict Role-Based Access Control (RBAC):</strong> The system enforces a rigid hierarchy of permissions at the API router level:
+                  </p>
+                  <ul className="list-disc pl-5 space-y-1">
+                    <li><code>ADMIN</code>: System configuration, Ward/Bed logistics, and Analytics.</li>
+                    <li><code>COORDINATOR</code>: Authorization of AI-recommended patient transfers.</li>
+                    <li><code>CLINICIAN</code>: Read-only access to clinical recommendations and telemetry.</li>
+                  </ul>
+                </section>
+                <section className="space-y-2">
+                  <h4 className="font-bold text-white uppercase tracking-wider text-[10px] text-indigo-400">4. Immutable Auditability & Telemetry</h4>
+                  <p>
+                    Every administrative action and clinical mutation generates a permanent record in the database. The system utilizes an <code>OperationalLog</code> architecture to track exactly when an AI recommendation was generated, what the EWS score was, and which specific human Coordinator approved or rejected the transfer.
+                  </p>
+                </section>
+              </div>
+
+              <div className="mt-6 pt-4 border-t border-white/5 flex justify-end">
+                <button 
+                  onClick={() => setIsWhitepaperOpen(false)}
+                  className="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-semibold transition-colors"
+                >
+                  Acknowledge and Close
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   );
 }

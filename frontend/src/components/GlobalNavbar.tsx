@@ -11,7 +11,7 @@ export default function GlobalNavbar() {
   const { user, logout } = useAuth();
   const pathname = usePathname();
 
-  if (!user) return null; // Don't render navbar if not logged in
+  if (!user || pathname === '/') return null; // Don't render navbar if not logged in or on landing page
 
   return (
     <header className="border-b border-slate-800/80 bg-slate-950/90 backdrop-blur-md sticky top-0 z-40 px-6 py-4 flex items-center justify-between shadow-sm shadow-slate-900/50">
@@ -31,8 +31,8 @@ export default function GlobalNavbar() {
         {/* Global Navigation Links */}
         <div className="hidden md:flex items-center gap-1 ml-4 border-l border-slate-800 pl-6">
           <Link 
-            href="/" 
-            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${pathname === '/' ? 'bg-slate-800 text-white' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'}`}
+            href="/dashboard" 
+            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${pathname === '/dashboard' ? 'bg-slate-800 text-white' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'}`}
           >
             Dashboard
           </Link>
