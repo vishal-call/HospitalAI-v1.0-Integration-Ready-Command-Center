@@ -43,6 +43,14 @@ export default function GlobalNavbar() {
             <HeartPulse className="h-4 w-4" />
             Response Center
           </Link>
+          {user.role === "ADMIN" && (
+            <Link 
+              href="/admin" 
+              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${pathname === '/admin' ? 'bg-indigo-500/10 text-indigo-400' : 'text-slate-400 hover:text-indigo-400 hover:bg-indigo-500/10'}`}
+            >
+              Admin Control
+            </Link>
+          )}
         </div>
       </div>
 
