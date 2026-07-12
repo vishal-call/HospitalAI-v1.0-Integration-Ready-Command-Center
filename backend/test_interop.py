@@ -140,7 +140,22 @@ def main():
     proc = subprocess.Popen(
         [sys.executable, "-m", "uvicorn", "main:app", "--host", "127.0.0.1", "--port", "8000"]
     )
-    time.sleep(5) # Wait for server to bind
+    
+    # Wait for server to bind using socket connection check
+    import socket
+    server_ready = False
+    for _ in range(30):  # try for 15 seconds
+        try:
+            with socket.create_connection(("127.0.0.1", 8000), timeout=0.5):
+                server_ready = True
+                break
+        except (ConnectionRefusedError, socket.timeout, OSError):
+            time.sleep(0.5)
+            
+    if not server_ready:
+        print("FastAPI server failed to start within timeout.")
+        proc.kill()
+        sys.exit(1)
 
     success = False
     try:

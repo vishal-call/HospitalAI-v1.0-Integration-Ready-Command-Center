@@ -62,9 +62,20 @@ export default function PatientDetailsModal({ patient, onClose }: PatientDetails
   const breakdown = scoreRecord?.explanation?.parameter_breakdown || {};
   const redFlags = scoreRecord?.explanation?.red_flags || [];
 
+  // Fallback calculations for maximum UI robustness
+  const fallbackRiskBand = patient.status === "CRITICAL" ? "HIGH" : (patient.status === "SERIOUS" ? "MEDIUM" : "LOW");
+  const riskBand = scoreRecord?.risk_band ?? fallbackRiskBand;
+  const clinicalScore = scoreRecord?.clinical_score ?? Math.round(patient.criticality_score);
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4 overflow-y-auto">
-      <div className="w-full max-w-2xl rounded-2xl border border-white/10 bg-slate-900/95 p-6 shadow-2xl relative text-slate-100 backdrop-blur-md">
+    <div 
+      onClick={onClose}
+      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4 overflow-y-auto"
+    >
+      <div 
+        onClick={(e) => e.stopPropagation()}
+        className="w-full max-w-2xl rounded-2xl border border-white/10 bg-slate-900/95 p-6 shadow-2xl relative text-slate-100 backdrop-blur-md"
+      >
         
         {/* Close Button */}
         <button
@@ -98,14 +109,18 @@ export default function PatientDetailsModal({ patient, onClose }: PatientDetails
                 <UserCheck className="h-6 w-6" />
               </div>
               <div>
-                <h3 className="text-xl font-bold tracking-tight text-white">{detailedPatient?.name}</h3>
+                <h3 className="text-xl font-bold tracking-tight text-white">
+                  {detailedPatient?.name ?? patient.name ?? "--"}
+                </h3>
                 <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1 text-xs font-medium text-slate-400">
-                  <span>ID: #{detailedPatient?.id}</span>
+                  <span>ID: #{detailedPatient?.id ?? patient.id ?? "--"}</span>
                   <span className="w-1 h-1 rounded-full bg-slate-700"></span>
-                  <span>{detailedPatient?.age}y / {detailedPatient?.gender}</span>
+                  <span>
+                    {(detailedPatient?.age ?? patient.age ?? "--")}y / {(detailedPatient?.gender ?? patient.gender ?? "--")}
+                  </span>
                   <span className="w-1 h-1 rounded-full bg-slate-700"></span>
                   <span className="text-indigo-400">
-                    Bed Assignment: {detailedPatient?.current_bed_id ? `Bed #${detailedPatient.current_bed_id}` : "Unassigned"}
+                    Bed Assignment: {(detailedPatient?.current_bed_id ?? patient.current_bed_id) ? `Bed #${detailedPatient?.current_bed_id ?? patient.current_bed_id}` : "Unassigned"}
                   </span>
                 </div>
               </div>
@@ -117,17 +132,17 @@ export default function PatientDetailsModal({ patient, onClose }: PatientDetails
               {/* Left Column: EWS Indicator */}
               <div className="flex flex-col items-center justify-center p-5 rounded-2xl border border-slate-800 bg-slate-950/40 text-center">
                 <span className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">EWS Score</span>
-                <div className={`h-24 w-24 rounded-full border-4 flex flex-col items-center justify-center ${getScoreCircleColor(scoreRecord?.risk_band)}`}>
+                <div className={`h-24 w-24 rounded-full border-4 flex flex-col items-center justify-center ${getScoreCircleColor(riskBand)}`}>
                   <span className="text-3xl font-black tracking-tight">
-                    {scoreRecord?.clinical_score ?? 0}
+                    {clinicalScore}
                   </span>
                   <span className="text-[10px] font-bold uppercase opacity-80">NEWS2</span>
                 </div>
-                <div className={`mt-3 px-3 py-1 rounded-full border text-[10px] font-bold tracking-wide uppercase ${getRiskColor(scoreRecord?.risk_band)}`}>
-                  {scoreRecord?.risk_band ?? "LOW"} RISK
+                <div className={`mt-3 px-3 py-1 rounded-full border text-[10px] font-bold tracking-wide uppercase ${getRiskColor(riskBand)}`}>
+                  {riskBand} RISK
                 </div>
                 <div className="mt-4 text-[11px] text-slate-500 leading-relaxed">
-                  Operational priority is <span className="font-semibold text-slate-300">{(detailedPatient?.criticality_score ?? 0.0).toFixed(1)}/10.0</span>.
+                  Operational priority is <span className="font-semibold text-slate-300">{(detailedPatient?.criticality_score ?? patient.criticality_score ?? 0.0).toFixed(1)}/10.0</span>.
                 </div>
               </div>
 
@@ -146,6 +161,10 @@ export default function PatientDetailsModal({ patient, onClose }: PatientDetails
                   <div className="grid grid-cols-2 gap-3">
                     {Object.entries(breakdown).map(([param, data]: [string, any]) => {
                       const isRedFlag = redFlags.includes(param);
+                      const paramName = param ? param.replace(/_/g, " ") : "--";
+                      const paramValue = data?.value ?? "--";
+                      const paramScale = data?.scale ? `(Scale ${data.scale})` : "";
+                      const paramScore = data?.score ?? 0;
                       return (
                         <div
                           key={param}
@@ -155,16 +174,16 @@ export default function PatientDetailsModal({ patient, onClose }: PatientDetails
                         >
                           <div className="flex flex-col">
                             <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wide">
-                              {param.replace(/_/g, " ")}
+                              {paramName}
                             </span>
                             <span className="text-xs font-semibold text-slate-200 mt-0.5">
-                              {data.value} {data.scale ? `(Scale ${data.scale})` : ""}
+                              {paramValue} {paramScale}
                             </span>
                           </div>
                           <div className="flex items-center gap-1.5">
                             {isRedFlag && <AlertTriangle className="h-3.5 w-3.5 text-rose-500" />}
-                            <span className={`text-sm font-bold ${isRedFlag ? "text-rose-500" : (data.score > 0 ? "text-amber-500" : "text-emerald-500")}`}>
-                              +{data.score}
+                            <span className={`text-sm font-bold ${isRedFlag ? "text-rose-500" : (paramScore > 0 ? "text-amber-500" : "text-emerald-500")}`}>
+                              +{paramScore}
                             </span>
                           </div>
                         </div>
@@ -179,7 +198,7 @@ export default function PatientDetailsModal({ patient, onClose }: PatientDetails
             <div className="mt-6 p-4 rounded-xl border border-slate-800 bg-slate-950/20">
               <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1">Reason for Admission</span>
               <p className="text-xs text-slate-300 leading-relaxed">
-                {detailedPatient?.admission_reason || "No details provided."}
+                {detailedPatient?.admission_reason || patient.admission_reason || "No details provided."}
               </p>
             </div>
           </div>
