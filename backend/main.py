@@ -182,10 +182,13 @@ from routes.scenario_routes import router as scenario_router
 from routes.integration_routes import router as integration_router
 from routes.reports_router import router as reports_router
 from routes.interop_router import router as interop_router
+from routes.admin_router import router as admin_router
 app.include_router(scenario_router)
 app.include_router(integration_router)
 app.include_router(reports_router)
 app.include_router(interop_router)
+app.include_router(admin_router)
+
 
 # WebSocket Connection Manager for live dashboard updates
 class ConnectionManager:
@@ -932,6 +935,17 @@ async def log_vitals(
         db.add(alert)
         await db.flush() # Flush to get ID for task
         await auto_generate_task_for_alert(db, alert, risk_band)
+        await crud.log_operational_event(
+            db,
+            patient.id,
+            "ALERT_TRIGGERED",
+            {
+                "alert_id": alert.id,
+                "alert_type": alert.alert_type.value if hasattr(alert.alert_type, "value") else str(alert.alert_type),
+                "severity": alert.severity.value if hasattr(alert.severity, "value") else str(alert.severity),
+                "ews_score": new_score
+            }
+        )
         alert_event = models.ClinicalEvent(
             patient_id=patient.id,
             event_type=models.ClinicalEventType.ALERT_TRIGGERED,

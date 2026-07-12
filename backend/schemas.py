@@ -395,3 +395,10 @@ class IntegrationResponse(IntegrationBase):
 
     class Config:
         from_attributes = True
+
+
+# --- Admin / Staff Schemas ---
+class StaffRoleUpdatePayload(BaseModel):
+    email: EmailStr
+    role: UserRole
+

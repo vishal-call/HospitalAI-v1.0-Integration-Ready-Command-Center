@@ -166,7 +166,19 @@ async def trigger_scenario(
         alerts = evaluate_vitals_for_alerts(patient.id, patient.name, 0.0, score, 85)
         for alert in alerts:
             db.add(alert)
-        await db.flush()
+            await db.flush()
+            import crud
+            await crud.log_operational_event(
+                db,
+                patient.id,
+                "ALERT_TRIGGERED",
+                {
+                    "alert_id": alert.id,
+                    "alert_type": alert.alert_type.value if hasattr(alert.alert_type, "value") else str(alert.alert_type),
+                    "severity": alert.severity.value if hasattr(alert.severity, "value") else str(alert.severity),
+                    "ews_score": score
+                }
+            )
         
         # Evaluate recommendations
         from services.orchestrator import evaluate_patient_and_recommend
@@ -408,7 +420,19 @@ async def trigger_scenario(
         alerts = evaluate_vitals_for_alerts(critical_patient.id, critical_patient.name, old_score, score, 85)
         for alert in alerts:
             db.add(alert)
-        await db.flush()
+            await db.flush()
+            import crud
+            await crud.log_operational_event(
+                db,
+                critical_patient.id,
+                "ALERT_TRIGGERED",
+                {
+                    "alert_id": alert.id,
+                    "alert_type": alert.alert_type.value if hasattr(alert.alert_type, "value") else str(alert.alert_type),
+                    "severity": alert.severity.value if hasattr(alert.severity, "value") else str(alert.severity),
+                    "ews_score": score
+                }
+            )
         
         # Evaluate recommendation (which should trigger chained transfer!)
         from services.orchestrator import evaluate_patient_and_recommend

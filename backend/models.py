@@ -695,3 +695,19 @@ class WardStaffing(Base):
     def __repr__(self) -> str:
         return f"<WardStaffing Ward: {self.ward_name}, Nurses: {self.current_nurses}, Ratio: 1:{self.max_patient_ratio}>"
 
+
+class OperationalLog(Base):
+    __tablename__ = "operational_logs"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    patient_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey("patients.id", ondelete="CASCADE"), nullable=True)
+    event_type: Mapped[str] = mapped_column(String(100), nullable=False)
+    timestamp: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
+    payload: Mapped[dict] = mapped_column(JSONB, nullable=False)
+
+    patient: Mapped[Optional["Patient"]] = relationship("Patient", foreign_keys=[patient_id])
+
+    def __repr__(self) -> str:
+        return f"<OperationalLog Event: {self.event_type}, Patient: {self.patient_id}>"
+
+

@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 import models
+import crud
 from models import PatientStatus, WardType, BedStatus, RecommendationStatus
 from services.scoring import calculate_criticality_score
 
@@ -188,6 +189,18 @@ async def evaluate_patient_and_recommend(
     db.add(recommendation)
     await db.flush()
 
+    await crud.log_operational_event(
+        db,
+        patient.id,
+        "RECOMMENDATION_GENERATED",
+        {
+            "recommendation_id": recommendation.id,
+            "criticality_score": score,
+            "type": recommendation.recommendation_type.value if hasattr(recommendation.recommendation_type, "value") else str(recommendation.recommendation_type),
+            "is_shadow": shadow_mode_enabled
+        }
+    )
+
     event_type = models.ClinicalEventType.SHADOW_RECOMMENDATION_GENERATED if shadow_mode_enabled else models.ClinicalEventType.RECOMMENDATION_GENERATED
     gen_event = models.ClinicalEvent(
         patient_id=patient.id,
@@ -338,6 +351,18 @@ async def run_icu_step_down_agent(
     db.add(chained_rec)
     await db.flush()
     
+    await crud.log_operational_event(
+        db,
+        incoming_patient.id,
+        "RECOMMENDATION_GENERATED",
+        {
+            "recommendation_id": chained_rec.id,
+            "criticality_score": incoming_patient.criticality_score,
+            "type": chained_rec.recommendation_type.value if hasattr(chained_rec.recommendation_type, "value") else str(chained_rec.recommendation_type),
+            "is_shadow": False
+        }
+    )
+    
     gen_event = models.ClinicalEvent(
         patient_id=incoming_patient.id,
         event_type=models.ClinicalEventType.RECOMMENDATION_GENERATED,
@@ -419,6 +444,18 @@ async def run_inter_hospital_agent(
     )
     db.add(recommendation)
     await db.flush()
+    
+    await crud.log_operational_event(
+        db,
+        incoming_patient.id,
+        "RECOMMENDATION_GENERATED",
+        {
+            "recommendation_id": recommendation.id,
+            "criticality_score": incoming_patient.criticality_score,
+            "type": recommendation.recommendation_type.value if hasattr(recommendation.recommendation_type, "value") else str(recommendation.recommendation_type),
+            "is_shadow": False
+        }
+    )
     
     gen_event = models.ClinicalEvent(
         patient_id=incoming_patient.id,

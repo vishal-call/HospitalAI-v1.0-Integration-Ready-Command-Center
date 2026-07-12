@@ -311,6 +311,17 @@ async def ingest_clinical_observation(
         db.add(alert)
         await db.flush()
         await auto_generate_task_for_alert(db, alert, risk_band)
+        await crud.log_operational_event(
+            db,
+            patient.id,
+            "ALERT_TRIGGERED",
+            {
+                "alert_id": alert.id,
+                "alert_type": alert.alert_type.value if hasattr(alert.alert_type, "value") else str(alert.alert_type),
+                "severity": alert.severity.value if hasattr(alert.severity, "value") else str(alert.severity),
+                "ews_score": new_score
+            }
+        )
         alert_event = models.ClinicalEvent(
             patient_id=patient.id,
             event_type=models.ClinicalEventType.ALERT_TRIGGERED,

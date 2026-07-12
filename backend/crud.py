@@ -96,6 +96,23 @@ async def create_audit_log(
     return log
 
 
+async def log_operational_event(
+    db: AsyncSession,
+    patient_id: Optional[int],
+    event_type: str,
+    payload: dict
+) -> models.OperationalLog:
+    log = models.OperationalLog(
+        patient_id=patient_id,
+        event_type=event_type,
+        payload=payload
+    )
+    db.add(log)
+    await db.flush()
+    return log
+
+
+
 async def get_wards(db: AsyncSession) -> List[models.Ward]:
     # Select wards and load their beds to calculate occupied beds count and utilization
     result = await db.execute(
@@ -319,6 +336,17 @@ async def action_recommendation(db: AsyncSession, rec_id: int, action: str, user
         # 1.5. Check expiration BEFORE heavy locks
         if recommendation.expires_at and datetime.utcnow() > recommendation.expires_at:
             recommendation.status = models.RecommendationStatus.EXPIRED
+            elapsed_seconds = (datetime.utcnow() - recommendation.created_at).total_seconds()
+            await log_operational_event(
+                db,
+                recommendation.patient_id,
+                "COORDINATOR_ACTION",
+                {
+                    "recommendation_id": recommendation.id,
+                    "action": "EXPIRED",
+                    "response_time_seconds": round(elapsed_seconds, 2)
+                }
+            )
             await db.commit()
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -344,6 +372,18 @@ async def action_recommendation(db: AsyncSession, rec_id: int, action: str, user
                 actor_id=user_id
             )
             db.add(reject_event)
+
+            elapsed_seconds = (datetime.utcnow() - recommendation.created_at).total_seconds()
+            await log_operational_event(
+                db,
+                recommendation.patient_id,
+                "COORDINATOR_ACTION",
+                {
+                    "recommendation_id": recommendation.id,
+                    "action": "REJECT",
+                    "response_time_seconds": round(elapsed_seconds, 2)
+                }
+            )
 
             await db.commit()
             return recommendation
@@ -406,6 +446,18 @@ async def action_recommendation(db: AsyncSession, rec_id: int, action: str, user
                     actor_id=user_id
                 )
                 db.add(approve_event)
+
+                elapsed_seconds = (datetime.utcnow() - recommendation.created_at).total_seconds()
+                await log_operational_event(
+                    db,
+                    recommendation.patient_id,
+                    "COORDINATOR_ACTION",
+                    {
+                        "recommendation_id": recommendation.id,
+                        "action": "APPROVE",
+                        "response_time_seconds": round(elapsed_seconds, 2)
+                    }
+                )
 
                 await db.commit()
                 return recommendation
@@ -499,6 +551,18 @@ async def action_recommendation(db: AsyncSession, rec_id: int, action: str, user
                 )
                 db.add(stepdown_event)
 
+                elapsed_seconds = (datetime.utcnow() - recommendation.created_at).total_seconds()
+                await log_operational_event(
+                    db,
+                    recommendation.patient_id,
+                    "COORDINATOR_ACTION",
+                    {
+                        "recommendation_id": recommendation.id,
+                        "action": "APPROVE",
+                        "response_time_seconds": round(elapsed_seconds, 2)
+                    }
+                )
+
                 await db.commit()
                 return recommendation
 
@@ -556,6 +620,18 @@ async def action_recommendation(db: AsyncSession, rec_id: int, action: str, user
                 actor_id=user_id
             )
             db.add(approve_event)
+
+            elapsed_seconds = (datetime.utcnow() - recommendation.created_at).total_seconds()
+            await log_operational_event(
+                db,
+                recommendation.patient_id,
+                "COORDINATOR_ACTION",
+                {
+                    "recommendation_id": recommendation.id,
+                    "action": "APPROVE",
+                    "response_time_seconds": round(elapsed_seconds, 2)
+                }
+            )
 
             await db.commit()
             return recommendation
