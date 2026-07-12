@@ -55,7 +55,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (typeof window !== "undefined" && loggedUser.token) {
         localStorage.setItem("auth_token", loggedUser.token);
       }
-      window.location.href = "/";
+      window.location.href = "/dashboard";
     } catch (err) {
       setUser(null);
       throw err;

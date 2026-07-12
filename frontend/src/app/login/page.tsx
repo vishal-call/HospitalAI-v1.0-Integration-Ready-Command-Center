@@ -26,14 +26,14 @@ export default function LoginPage() {
       const token = urlParams.get("token");
       if (token) {
         localStorage.setItem("auth_token", token);
-        window.location.href = "/";
+        window.location.href = "/dashboard";
       }
     }
   }, []);
 
   useEffect(() => {
     if (user) {
-      window.location.href = "/";
+      window.location.href = "/dashboard";
     }
   }, [user]);
 
