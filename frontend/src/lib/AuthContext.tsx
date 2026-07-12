@@ -34,7 +34,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       } catch (err) {
         // ignore logout errors
       }
-      if (typeof window !== "undefined" && window.location.pathname !== "/login") {
+      if (typeof window !== "undefined" && window.location.pathname !== "/login" && window.location.pathname !== "/") {
         router.push("/login");
       }
     } finally {
