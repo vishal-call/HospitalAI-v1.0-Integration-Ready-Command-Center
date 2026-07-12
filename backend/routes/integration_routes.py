@@ -204,6 +204,11 @@ async def ingest_vitals(
         
     old_score = patient.criticality_score
     
+    # Map consciousness_level string to ConsciousnessLevel enum
+    cons_level = models.ConsciousnessLevel.ALERT
+    if payload.consciousness_level.upper() in ["CVPU", "C", "V", "P", "U"]:
+        cons_level = models.ConsciousnessLevel.CVPU
+
     # Save Vitals
     new_vitals = models.PatientVitals(
         patient_id=patient.id,
@@ -211,7 +216,8 @@ async def ingest_vitals(
         resp_rate=payload.respiratory_rate,
         spo2=payload.spo2,
         temperature=payload.temperature,
-        consciousness=payload.consciousness_level,
+        systolic_bp=payload.systolic_bp,
+        consciousness_level=cons_level,
         oxygen_supplement=payload.oxygen_supplement
     )
     db.add(new_vitals)
