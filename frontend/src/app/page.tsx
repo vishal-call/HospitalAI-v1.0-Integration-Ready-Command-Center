@@ -71,21 +71,21 @@ export default function LandingPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#060608] text-slate-100 font-sans relative overflow-hidden selection:bg-emerald-500/20 selection:text-emerald-300">
+    <div className="min-h-screen bg-[#050505] text-slate-100 font-sans relative overflow-hidden selection:bg-emerald-500/20 selection:text-emerald-300">
       
-      {/* BACKGROUND glowing atmosphere */}
-      <div className="absolute top-[-15%] left-[-10%] w-[55%] h-[55%] rounded-full bg-blue-600/10 blur-[130px] pointer-events-none" />
-      <div className="absolute bottom-[15%] right-[-10%] w-[65%] h-[65%] rounded-full bg-emerald-500/5 blur-[160px] pointer-events-none" />
+      {/* BACKGROUND glowing atmosphere mesh */}
+      <div className="absolute top-[-15%] left-[-10%] w-[55%] h-[55%] rounded-full bg-emerald-500/10 blur-[120px] pointer-events-none" />
+      <div className="absolute bottom-[15%] right-[-10%] w-[65%] h-[65%] rounded-full bg-blue-600/10 blur-[130px] pointer-events-none" />
       <div className="absolute top-[25%] left-[35%] w-[400px] h-[400px] rounded-full bg-indigo-500/5 blur-[120px] pointer-events-none" />
 
-      {/* FLOATING NAVIGATION BAR */}
+      {/* FLOATING PILL NAVBAR */}
       <motion.nav 
         initial={{ y: -30, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ type: "spring", stiffness: 120, delay: 0.2 }}
-        className="w-full max-w-5xl mx-auto px-4 pt-6 sticky top-0 z-50 pointer-events-none"
+        className="w-full max-w-4xl mx-auto px-4 pt-6 sticky top-0 z-50 pointer-events-none"
       >
-        <div className="w-full bg-slate-950/40 backdrop-blur-xl border border-white/10 rounded-full px-6 py-3 flex items-center justify-between shadow-2xl shadow-black/80 pointer-events-auto">
+        <div className="w-full bg-white/5 backdrop-blur-3xl border border-white/10 rounded-full px-6 py-3 flex items-center justify-between shadow-2xl shadow-black/80 pointer-events-auto">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2.5 group">
             <div className="h-8 w-8 rounded-lg bg-gradient-to-tr from-indigo-500 to-emerald-500 flex items-center justify-center shadow-lg shadow-indigo-500/20 group-hover:scale-105 transition-transform">
@@ -108,9 +108,9 @@ export default function LandingPage() {
           <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
             <Link 
               href={user ? "/dashboard" : "/login"}
-              className="flex items-center gap-1.5 px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-full text-xs font-bold text-white shadow-lg transition-all"
+              className="flex items-center gap-1.5 px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-[#050505] rounded-full text-xs font-bold shadow-lg transition-all"
             >
-              Access Command Center
+              Access System
               <ArrowUpRight className="h-3.5 w-3.5" />
             </Link>
           </motion.div>
@@ -118,154 +118,134 @@ export default function LandingPage() {
       </motion.nav>
 
       {/* HERO SECTION */}
-      <section className="max-w-7xl mx-auto px-6 pt-16 pb-20 relative z-10 flex flex-col items-center">
-        <motion.div 
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
-          className="text-center max-w-3xl flex flex-col items-center"
-        >
-          {/* Tag */}
+      <section className="max-w-7xl mx-auto px-6 pt-16 pb-20 relative z-10">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
+          
+          {/* Left Column (60% width equivalent) */}
           <motion.div 
-            variants={itemVariants}
-            className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-bold tracking-wider uppercase mb-8"
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            className="lg:col-span-7 flex flex-col items-start text-left"
           >
-            <Cpu className="h-3 w-3" /> Intelligent Clinical Logistics & Telemetry
-          </motion.div>
-
-          {/* Headline */}
-          <motion.h1 
-            variants={itemVariants}
-            className="text-4xl sm:text-6xl font-black tracking-tight text-white leading-[1.08] mb-6"
-          >
-            AI-Driven Clinical <br />
-            <span className="bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 via-teal-400 to-indigo-400">
-              Logistics & Telemetry
-            </span>
-          </motion.h1>
-
-          {/* Subheadline */}
-          <motion.p 
-            variants={itemVariants}
-            className="text-sm sm:text-base text-slate-450 text-slate-400 max-w-xl leading-relaxed mb-10"
-          >
-            Anticipate patient deterioration and automate bed capacity via live HL7/FHIR streams. 
-            A perfect balance between scientific precision and autonomous orchestration.
-          </motion.p>
-
-          {/* Action CTAs */}
-          <motion.div variants={itemVariants} className="flex flex-col sm:flex-row items-center gap-4 mb-20 w-full sm:w-auto">
-            <motion.div whileHover={{ scale: 1.02, boxShadow: "0 0 20px rgba(16, 185, 129, 0.4)" }} whileTap={{ scale: 0.98 }} className="w-full sm:w-auto">
-              <Link 
-                href={user ? "/dashboard" : "/login"}
-                className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-3.5 bg-emerald-500 text-[#060608] font-extrabold text-sm rounded-xl transition-all shadow-xl shadow-emerald-500/15"
-              >
-                Access Command Center
-                <ArrowRight className="h-4 w-4" />
-              </Link>
-            </motion.div>
-            <motion.button 
-              whileHover={{ scale: 1.02, backgroundColor: "rgba(255,255,255,0.08)" }} 
-              whileTap={{ scale: 0.98 }}
-              onClick={() => setIsWhitepaperOpen(true)}
-              className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-3.5 bg-white/5 border border-white/10 text-white font-bold text-sm rounded-xl transition-all"
+            {/* Tag */}
+            <motion.div 
+              variants={itemVariants}
+              className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-bold tracking-wider uppercase mb-8"
             >
-              View Architecture
-              <BookOpen className="h-4 w-4" />
-            </motion.button>
+              <Cpu className="h-3 w-3" /> Intelligent Clinical Logistics & Telemetry
+            </motion.div>
+
+            {/* Headline */}
+            <motion.h1 
+              variants={itemVariants}
+              className="text-4xl sm:text-6xl font-black tracking-tight leading-[1.08] mb-6 bg-clip-text text-transparent bg-gradient-to-r from-white to-white/60"
+            >
+              Intelligent Clinical <br />
+              Logistics & Telemetry.
+            </motion.h1>
+
+            {/* Subheadline */}
+            <motion.p 
+              variants={itemVariants}
+              className="text-sm sm:text-base text-slate-400 max-w-xl leading-relaxed mb-10"
+            >
+              Anticipate patient deterioration and automate bed capacity via live HL7/FHIR streams. A perfect balance between scientific precision and autonomous orchestration.
+            </motion.p>
+
+            {/* Action CTAs */}
+            <motion.div variants={itemVariants} className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
+              <motion.div whileHover={{ scale: 1.02, boxShadow: "0 0 20px rgba(16, 185, 129, 0.4)" }} whileTap={{ scale: 0.98 }} className="w-full sm:w-auto">
+                <Link 
+                  href={user ? "/dashboard" : "/login"}
+                  className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-3.5 bg-emerald-500 text-[#050505] font-extrabold text-sm rounded-full transition-all"
+                >
+                  Access Command Center
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+              </motion.div>
+              <motion.button 
+                whileHover={{ scale: 1.02, backgroundColor: "rgba(255,255,255,0.08)" }} 
+                whileTap={{ scale: 0.98 }}
+                onClick={() => setIsWhitepaperOpen(true)}
+                className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-3.5 bg-white/5 border border-white/10 text-white font-bold text-sm rounded-full transition-all"
+              >
+                View Architecture
+                <BookOpen className="h-4 w-4" />
+              </motion.button>
+            </motion.div>
           </motion.div>
-        </motion.div>
 
-        {/* AWSMD CENTERPIECE: Neural Mesh Graphic */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.96 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 1, delay: 0.5 }}
-          className="w-full max-w-4xl aspect-[16/9] rounded-3xl border border-white/5 bg-slate-900/15 backdrop-blur-xl relative flex items-center justify-center overflow-hidden shadow-2xl"
-        >
-          {/* Grid lines simulating a clinical network coordinates system */}
-          <svg className="absolute inset-0 w-full h-full text-slate-800/15" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
-                <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(255, 255, 255, 0.03)" strokeWidth="1" />
-              </pattern>
-            </defs>
-            <rect width="100%" height="100%" fill="url(#grid)" />
-          </svg>
+          {/* Right Column (40% width equivalent) - Visual Centerpiece */}
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 1, delay: 0.4 }}
+            className="lg:col-span-5 w-full flex justify-center relative"
+          >
+            {/* The Main AWSMD Glass container */}
+            <div className="w-full aspect-square bg-white/5 backdrop-blur-3xl border border-white/10 shadow-2xl rounded-[2rem] flex items-center justify-center p-6 relative overflow-hidden">
+              
+              {/* Matrix dots grid background */}
+              <div className="absolute inset-0 bg-[radial-gradient(#1e293b_1px,transparent_1px)] [background-size:20px_20px] opacity-35" />
 
-          {/* Glowing Neural Mesh SVG circles & connecting paths */}
-          <svg className="w-[85%] h-[75%] relative z-10" viewBox="0 0 800 400">
-            {/* Background connection links */}
-            <line x1="150" y1="120" x2="300" y2="240" stroke="rgba(16, 185, 129, 0.12)" strokeWidth="2" />
-            <line x1="300" y1="240" x2="450" y2="100" stroke="rgba(99, 102, 241, 0.12)" strokeWidth="2" />
-            <line x1="450" y1="100" x2="600" y2="280" stroke="rgba(16, 185, 129, 0.12)" strokeWidth="2" />
-            <line x1="300" y1="240" x2="600" y2="280" stroke="rgba(255, 255, 255, 0.05)" strokeWidth="1" />
+              {/* Pulsing Core */}
+              <motion.div
+                animate={{ scale: [1, 1.15, 1], opacity: [0.5, 0.8, 0.5] }}
+                transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
+                className="h-28 w-28 rounded-full bg-gradient-to-tr from-emerald-500 to-blue-500 blur-xl absolute"
+              />
 
-            {/* Glowing Intersections */}
-            <motion.circle 
-              cx="150" cy="120" r="5" fill="#10b981" 
-              animate={{ r: [5, 9, 5] }}
-              transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }}
-            />
-            <circle cx="150" cy="120" r="15" stroke="#10b981" strokeWidth="1" className="opacity-25 animate-pulse" />
+              {/* Layered concentric orbits */}
+              <motion.div 
+                animate={{ rotate: 360 }}
+                transition={{ repeat: Infinity, duration: 25, ease: "linear" }}
+                className="absolute h-[70%] aspect-square rounded-full border border-white/10 flex items-center justify-center"
+              />
+              <motion.div 
+                animate={{ rotate: -360 }}
+                transition={{ repeat: Infinity, duration: 35, ease: "linear" }}
+                className="absolute h-[50%] aspect-square rounded-full border border-dashed border-white/15 flex items-center justify-center"
+              />
 
-            <motion.circle 
-              cx="300" cy="240" r="6" fill="#6366f1" 
-              animate={{ r: [6, 11, 6] }}
-              transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
-            />
-            <circle cx="300" cy="240" r="18" stroke="#6366f1" strokeWidth="1" className="opacity-25 animate-pulse" />
+              {/* Glowing SVG nodes & links */}
+              <svg className="w-full h-full relative z-10" viewBox="0 0 400 400">
+                <line x1="200" y1="200" x2="80" y2="100" stroke="rgba(255,255,255,0.15)" strokeWidth="1.5" />
+                <line x1="200" y1="200" x2="320" y2="120" stroke="rgba(255,255,255,0.15)" strokeWidth="1.5" />
+                <line x1="200" y1="200" x2="140" y2="300" stroke="rgba(255,255,255,0.15)" strokeWidth="1.5" />
+                <line x1="200" y1="200" x2="280" y2="280" stroke="rgba(255,255,255,0.15)" strokeWidth="1.5" />
+                {/* Nodes */}
+                <circle cx="80" cy="100" r="4" fill="#10b981" />
+                <circle cx="320" cy="120" r="4" fill="#3b82f6" />
+                <circle cx="140" cy="300" r="4" fill="#6366f1" />
+                <circle cx="280" cy="280" r="4" fill="#10b981" />
+              </svg>
+            </div>
 
-            <motion.circle 
-              cx="450" cy="100" r="5" fill="#10b981" 
-              animate={{ r: [5, 9, 5] }}
-              transition={{ repeat: Infinity, duration: 3.5, ease: "easeInOut" }}
-            />
-            <circle cx="450" cy="100" r="15" stroke="#10b981" strokeWidth="1" className="opacity-25 animate-pulse" />
-
-            <motion.circle 
-              cx="600" cy="280" r="7" fill="#6366f1" 
-              animate={{ r: [7, 12, 7] }}
+            {/* FLOATING DATA WIDGETS (Micro-Glass) */}
+            <motion.div 
+              animate={{ y: [0, -8, 0] }}
               transition={{ repeat: Infinity, duration: 5, ease: "easeInOut" }}
-            />
-            <circle cx="600" cy="280" r="20" stroke="#6366f1" strokeWidth="1" className="opacity-25 animate-pulse" />
-          </svg>
+              className="absolute top-8 -left-8 bg-white/5 border border-white/10 backdrop-blur-3xl rounded-full px-4 py-2 flex items-center gap-2 shadow-2xl z-20"
+            >
+              <span className="h-2 w-2 rounded-full bg-emerald-400 animate-ping" />
+              <span className="text-[9px] font-mono font-bold text-slate-200">🟢 Live HL7/FHIR Sync</span>
+            </motion.div>
 
-          {/* FLOATING DATA WIDGETS */}
-          <motion.div 
-            animate={{ y: [0, -8, 0] }}
-            transition={{ repeat: Infinity, duration: 5, ease: "easeInOut" }}
-            className="absolute top-10 left-10 bg-slate-900/80 border border-white/10 backdrop-blur-md rounded-2xl px-4 py-2 flex items-center gap-2.5 shadow-xl shadow-black/40 z-20"
-          >
-            <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="text-[10px] font-mono font-bold text-slate-200">🟢 EWS Latency: 1.13s</span>
+            <motion.div 
+              animate={{ y: [0, 8, 0] }}
+              transition={{ repeat: Infinity, duration: 6, ease: "easeInOut" }}
+              className="absolute bottom-16 -right-6 bg-white/5 border border-white/10 backdrop-blur-3xl rounded-full px-4 py-2 flex items-center gap-2 shadow-2xl z-20"
+            >
+              <span className="h-2 w-2 rounded-full bg-blue-500" />
+              <span className="text-[9px] font-mono font-bold text-slate-200">1.13s Median Latency</span>
+            </motion.div>
           </motion.div>
 
-          <motion.div 
-            animate={{ y: [0, 8, 0] }}
-            transition={{ repeat: Infinity, duration: 6, ease: "easeInOut" }}
-            className="absolute bottom-12 right-12 bg-slate-900/80 border border-white/10 backdrop-blur-md rounded-2xl px-4 py-2 flex items-center gap-2.5 shadow-xl shadow-black/40 z-20"
-          >
-            <span className="h-2 w-2 rounded-full bg-blue-400" />
-            <span className="text-[10px] font-mono font-bold text-slate-200">Ingestion: 14 FHIR streams/s</span>
-          </motion.div>
-
-          <motion.div 
-            animate={{ y: [0, -6, 0] }}
-            transition={{ repeat: Infinity, duration: 4.5, ease: "easeInOut" }}
-            className="absolute top-16 right-20 bg-slate-900/80 border border-white/10 backdrop-blur-md rounded-2xl px-4 py-2 flex items-center gap-2.5 shadow-xl shadow-black/40 z-20"
-          >
-            <span className="h-2 w-2 rounded-full bg-indigo-400" />
-            <span className="text-[10px] font-mono font-bold text-slate-200">SSO Session Authenticated</span>
-          </motion.div>
-
-          <div className="absolute bottom-6 left-6 flex items-center gap-2.5 bg-slate-950/80 border border-white/5 rounded-xl px-4 py-2 text-[9px] font-mono text-slate-500 backdrop-blur-md">
-            NODE IP: 127.0.0.1 // STATUS ACTIVE
-          </div>
-        </motion.div>
+        </div>
       </section>
 
-      {/* BENTO BOX GRID */}
+      {/* THE STAGGERED BENTO GRID */}
       <motion.section 
         id="features"
         variants={scrollRevealVariants}
@@ -279,45 +259,60 @@ export default function LandingPage() {
           <h3 className="text-2xl sm:text-4xl font-black text-white">Biotech Logistical Architecture</h3>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
           
-          {/* Card 1 (Wide - 2 columns) */}
+          {/* Block 1 (col-span-8): Predictive Early Warning (EWS) */}
           <motion.div 
-            whileHover={{ y: -5, borderColor: "rgba(255,255,255,0.12)" }}
-            className="md:col-span-2 bg-slate-900/40 border border-white/5 rounded-3xl p-8 backdrop-blur-xl flex flex-col justify-between h-[300px] transition-colors relative overflow-hidden"
+            whileHover={{ y: -5, borderColor: "rgba(255,255,255,0.2)" }}
+            className="md:col-span-8 bg-white/5 border border-white/10 rounded-[2rem] p-8 backdrop-blur-3xl flex flex-col justify-between min-h-[300px] transition-colors relative overflow-hidden shadow-2xl"
           >
             <div className="absolute top-0 right-0 w-[150px] h-[150px] bg-indigo-500/5 rounded-full blur-[60px] pointer-events-none" />
-            <div className="h-10 w-10 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400">
-              <Zap className="h-5 w-5" />
+            <div className="flex items-center justify-between mb-4">
+              <div className="h-10 w-10 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400">
+                <Zap className="h-5 w-5" />
+              </div>
+              <span className="text-[9px] font-mono font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">NEWS2 Compliance</span>
             </div>
             <div>
-              <h4 className="font-extrabold text-lg text-white mb-2">Real-Time Early Warning Scoring</h4>
+              <h4 className="font-extrabold text-lg text-white mb-2">Predictive Early Warning Scoring (EWS)</h4>
               <p className="text-xs text-slate-400 leading-relaxed max-w-xl">
-                Evaluates patient vitals using automated NEWS2 rules. Built with FastAPI async event loops that compute subsecond EWS calculations to alert coordinators immediately.
+                FastAPI asynchronous loops evaluate patient vitals logs continuously. Renders subsecond EWS warnings to clinical coordinators, flagging deterioration before it manifests physically.
               </p>
             </div>
+
+            {/* Mock Time Series Chart */}
+            <svg className="w-full h-24 text-emerald-400 mt-6" viewBox="0 0 500 100" fill="none">
+              <path d="M0 80 Q 50 60, 100 80 T 200 40 T 300 70 T 400 20 T 500 10" stroke="#10b981" strokeWidth="3" strokeLinecap="round" />
+              <path d="M0 80 Q 50 60, 100 80 T 200 40 T 300 70 T 400 20 T 500 10 L 500 100 L 0 100 Z" fill="url(#gradientArea)" className="opacity-10" />
+              <defs>
+                <linearGradient id="gradientArea" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#10b981" />
+                  <stop offset="100%" stopColor="#10b981" stopOpacity="0" />
+                </linearGradient>
+              </defs>
+            </svg>
           </motion.div>
 
-          {/* Card 2 (Square - 1 column) */}
+          {/* Block 2 (col-span-4): Multi-Agent Logistics */}
           <motion.div 
-            whileHover={{ y: -5, borderColor: "rgba(255,255,255,0.12)" }}
-            className="col-span-1 bg-slate-900/40 border border-white/5 rounded-3xl p-8 backdrop-blur-xl flex flex-col justify-between h-[300px] transition-colors"
+            whileHover={{ y: -5, borderColor: "rgba(255,255,255,0.2)" }}
+            className="md:col-span-4 bg-white/5 border border-white/10 rounded-[2rem] p-8 backdrop-blur-3xl flex flex-col justify-between min-h-[300px] transition-colors shadow-2xl"
           >
             <div className="h-10 w-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
-              <Network className="h-5 w-5" />
+              <Workflow className="h-5 w-5" />
             </div>
             <div>
-              <h4 className="font-extrabold text-lg text-white mb-2">HL7/FHIR Compliance</h4>
+              <h4 className="font-extrabold text-lg text-white mb-2">Multi-Agent Logistics</h4>
               <p className="text-xs text-slate-400 leading-relaxed">
-                Ingests active patient data payloads compliant with standard enterprise clinical formats.
+                Autonomous orchestrators negotiate capacity constraints across partner networks, planning step-down relocations and inter-hospital moves.
               </p>
             </div>
           </motion.div>
 
-          {/* Card 3 (Square - 1 column) */}
+          {/* Block 3 (col-span-4): Zero-Trust Architecture */}
           <motion.div 
-            whileHover={{ y: -5, borderColor: "rgba(255,255,255,0.12)" }}
-            className="col-span-1 bg-slate-900/40 border border-white/5 rounded-3xl p-8 backdrop-blur-xl flex flex-col justify-between h-[300px] transition-colors"
+            whileHover={{ y: -5, borderColor: "rgba(255,255,255,0.2)" }}
+            className="md:col-span-4 bg-white/5 border border-white/10 rounded-[2rem] p-8 backdrop-blur-3xl flex flex-col justify-between min-h-[300px] transition-colors shadow-2xl"
           >
             <div className="h-10 w-10 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400">
               <Lock className="h-5 w-5" />
@@ -325,24 +320,27 @@ export default function LandingPage() {
             <div>
               <h4 className="font-extrabold text-lg text-white mb-2">Zero-Trust Security</h4>
               <p className="text-xs text-slate-400 leading-relaxed">
-                Enforces TLS 1.3 standards and secure cryptographic Route-Level RBAC checks.
+                Protected via secure TLS 1.3 handshakes, cryptographically signed cookies, and route-level role authorizations (RBAC).
               </p>
             </div>
           </motion.div>
 
-          {/* Card 4 (Wide - 2 columns) */}
+          {/* Block 4 (col-span-8): Automated Bed Allocation */}
           <motion.div 
-            whileHover={{ y: -5, borderColor: "rgba(255,255,255,0.12)" }}
-            className="md:col-span-2 bg-slate-900/40 border border-white/5 rounded-3xl p-8 backdrop-blur-xl flex flex-col justify-between h-[300px] transition-colors relative overflow-hidden"
+            whileHover={{ y: -5, borderColor: "rgba(255,255,255,0.2)" }}
+            className="md:col-span-8 bg-white/5 border border-white/10 rounded-[2rem] p-8 backdrop-blur-3xl flex flex-col justify-between min-h-[300px] transition-colors relative overflow-hidden shadow-2xl"
           >
             <div className="absolute bottom-0 right-0 w-[150px] h-[150px] bg-emerald-500/5 rounded-full blur-[60px] pointer-events-none" />
-            <div className="h-10 w-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
-              <Workflow className="h-5 w-5" />
+            <div className="flex items-center justify-between mb-4">
+              <div className="h-10 w-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+                <Network className="h-5 w-5" />
+              </div>
+              <span className="text-[9px] font-mono font-bold text-indigo-400 bg-indigo-500/10 px-2 py-0.5 rounded border border-indigo-500/20">DB Locking</span>
             </div>
             <div>
-              <h4 className="font-extrabold text-lg text-white mb-2">Autonomous Multi-Agent Routing</h4>
+              <h4 className="font-extrabold text-lg text-white mb-2">Automated Bed Allocation</h4>
               <p className="text-xs text-slate-400 leading-relaxed max-w-xl">
-                Triage recommendations are brokered dynamically by multi-agent networks, balancing ward bed capacity constraints and safety metrics automatically.
+                Implements database-level row locks to eliminate allocation conflicts. When a transfer suggestion is initiated, target beds are reserved instantly, securing clinical spaces with zero collision.
               </p>
             </div>
           </motion.div>
@@ -359,11 +357,11 @@ export default function LandingPage() {
         viewport={{ once: true, margin: "-100px" }}
         className="max-w-7xl mx-auto px-6 py-12 relative z-10"
       >
-        <div className="w-full bg-slate-900/30 border border-white/5 rounded-3xl p-8 sm:p-12 backdrop-blur-xl relative overflow-hidden flex flex-col sm:flex-row items-center justify-between gap-8">
+        <div className="w-full bg-white/5 border border-white/10 rounded-[2rem] p-8 sm:p-12 backdrop-blur-3xl relative overflow-hidden shadow-2xl flex flex-col sm:flex-row items-center justify-between gap-8">
           <div className="max-w-md">
-            <h3 className="font-extrabold text-xl text-white mb-2">Clinical Outcome Telemetry</h3>
-            <p className="text-xs text-slate-450 text-slate-400 leading-relaxed">
-              HospitalAI calculates operational savings and performance metrics directly on a secure compliance database.
+            <h3 className="font-extrabold text-xl text-white mb-2">Outcome Telemetry Logs</h3>
+            <p className="text-xs text-slate-400 leading-relaxed">
+              HospitalAI measures performance logging directly to demonstrate saving metrics and data-rate latencies.
             </p>
           </div>
 
@@ -404,7 +402,7 @@ export default function LandingPage() {
             return (
               <div 
                 key={idx}
-                className="bg-slate-900/40 border border-white/5 rounded-2xl overflow-hidden transition-all duration-300"
+                className="bg-white/5 border border-white/10 rounded-[2rem] overflow-hidden transition-all duration-300 shadow-2xl"
               >
                 <button
                   onClick={() => setOpenAccordion(isOpen ? null : idx)}
