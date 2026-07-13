@@ -201,9 +201,9 @@ export default function LandingPage() {
                 className="h-48 w-48 rounded-full bg-fuchsia-600 blur-[100px] absolute bottom-10 right-10 pointer-events-none"
               />
 
-              {/* Premium Animated Biotech Infinity Loop Mesh Network */}
+              {/* Swirling Neon Biotech Infinity Loop (Match 2nd Image Spec) */}
               <motion.div 
-                className="w-[90%] h-[90%] relative z-10 flex items-center justify-center"
+                className="w-full h-full relative z-10 flex items-center justify-center"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.8 }}
@@ -211,142 +211,155 @@ export default function LandingPage() {
                 <svg className="w-full h-full" viewBox="0 0 200 200" fill="none">
                   {/* SVG Definitions for biotech gradients */}
                   <defs>
-                    <linearGradient id="infinity-gradient" x1="0" y1="0" x2="1" y2="0">
-                      <stop offset="0%" stopColor="#3b82f6" />
-                      <stop offset="50%" stopColor="#818cf8" />
-                      <stop offset="100%" stopColor="#d946ef" />
+                    {/* Left lobe blue gradient */}
+                    <linearGradient id="blue-grad" x1="0" y1="0" x2="1" y2="0">
+                      <stop offset="0%" stopColor="#00f2fe" />
+                      <stop offset="100%" stopColor="#4facfe" />
                     </linearGradient>
+                    {/* Right lobe fuchsia gradient */}
+                    <linearGradient id="fuchsia-grad" x1="0" y1="0" x2="1" y2="0">
+                      <stop offset="0%" stopColor="#ec4899" />
+                      <stop offset="100%" stopColor="#8b5cf6" />
+                    </linearGradient>
+                    {/* Master blend gradient */}
+                    <linearGradient id="blend-grad" x1="0" y1="0" x2="1" y2="0">
+                      <stop offset="0%" stopColor="#00f2fe" />
+                      <stop offset="50%" stopColor="#a855f7" />
+                      <stop offset="100%" stopColor="#ec4899" />
+                    </linearGradient>
+                    {/* Center glow radial gradient */}
+                    <radialGradient id="center-flare" cx="50%" cy="50%" r="50%">
+                      <stop offset="0%" stopColor="#ffffff" stopOpacity="1" />
+                      <stop offset="25%" stopColor="#ffffff" stopOpacity="0.8" />
+                      <stop offset="60%" stopColor="#a855f7" stopOpacity="0.3" />
+                      <stop offset="100%" stopColor="#a855f7" stopOpacity="0" />
+                    </radialGradient>
                   </defs>
 
-                  {/* Twinkling background star/particle elements */}
-                  <motion.circle cx="60" cy="50" r="1.5" fill="#ffffff" animate={{ opacity: [0.2, 1, 0.2], scale: [0.7, 1.3, 0.7] }} transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }} />
-                  <motion.circle cx="140" cy="50" r="1" fill="#818cf8" animate={{ opacity: [0.1, 0.9, 0.1], scale: [0.6, 1.2, 0.6] }} transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut", delay: 0.5 }} />
-                  <motion.circle cx="45" cy="150" r="1.5" fill="#d946ef" animate={{ opacity: [0.2, 1, 0.2], scale: [0.8, 1.4, 0.8] }} transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: 0.2 }} />
-                  <motion.circle cx="155" cy="150" r="1" fill="#ffffff" animate={{ opacity: [0.1, 0.8, 0.1], scale: [0.5, 1.1, 0.5] }} transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut", delay: 0.8 }} />
-                  <motion.circle cx="100" cy="65" r="1.5" fill="#3b82f6" animate={{ opacity: [0.2, 1, 0.2], scale: [0.7, 1.3, 0.7] }} transition={{ duration: 2.8, repeat: Infinity, ease: "easeInOut", delay: 1.1 }} />
-
-                  {/* Intricate Geometric Data-Mesh Lattice Structure */}
-                  <g stroke="rgba(148, 163, 184, 0.15)" strokeWidth="0.75">
-                    {/* Center point crossover links */}
-                    <line x1="100" y1="100" x2="132.5" y2="87.5" />
-                    <line x1="100" y1="100" x2="165" y2="75" />
-                    <line x1="100" y1="100" x2="182.5" y2="100" />
-                    <line x1="100" y1="100" x2="165" y2="125" />
-                    <line x1="100" y1="100" x2="132.5" y2="112.5" />
-                    <line x1="100" y1="100" x2="67.5" y2="87.5" />
-                    <line x1="100" y1="100" x2="35" y2="75" />
-                    <line x1="100" y1="100" x2="17.5" y2="100" />
-                    <line x1="100" y1="100" x2="35" y2="125" />
-                    <line x1="100" y1="100" x2="67.5" y2="112.5" />
-
-                    {/* Vertical and diagonal cross linkages */}
-                    <line x1="165" y1="75" x2="165" y2="125" />
-                    <line x1="35" y1="75" x2="35" y2="125" />
-                    <line x1="132.5" y1="87.5" x2="132.5" y2="112.5" />
-                    <line x1="67.5" y1="87.5" x2="67.5" y2="112.5" />
-                    <line x1="17.5" y1="100" x2="35" y2="75" />
-                    <line x1="17.5" y1="100" x2="35" y2="125" />
-                    <line x1="182.5" y1="100" x2="165" y2="75" />
-                    <line x1="182.5" y1="100" x2="165" y2="125" />
-
-                    {/* Cross-lobe linkages */}
-                    <line x1="132.5" y1="87.5" x2="35" y2="125" />
-                    <line x1="67.5" y1="87.5" x2="165" y2="125" />
-                    <line x1="67.5" y1="112.5" x2="165" y2="75" />
-                    <line x1="132.5" y1="112.5" x2="35" y2="75" />
-                  </g>
-
-                  {/* Multi-Layered spinning fiber strands */}
-                  {/* Layer 1 (Outer Blur Glow) */}
+                  {/* Soft Background Halos / Glows */}
                   <path 
                     d="M 100 100 C 120 80, 145 60, 165 75 C 190 95, 190 105, 165 125 C 145 140, 120 120, 100 100 C 80 80, 55 60, 35 75 C 10 95, 10 105, 35 125 C 55 140, 80 120, 100 100 Z" 
-                    stroke="url(#infinity-gradient)" 
-                    strokeWidth="6" 
-                    fill="none"
-                    className="opacity-20 blur-sm pointer-events-none"
+                    stroke="#3b82f6" 
+                    strokeWidth="14" 
+                    fill="none" 
+                    className="opacity-15 blur-lg pointer-events-none" 
+                  />
+                  <path 
+                    d="M 100 100 C 120 80, 145 60, 165 75 C 190 95, 190 105, 165 125 C 145 140, 120 120, 100 100 C 80 80, 55 60, 35 75 C 10 95, 10 105, 35 125 C 55 140, 80 120, 100 100 Z" 
+                    stroke="#ec4899" 
+                    strokeWidth="10" 
+                    fill="none" 
+                    className="opacity-20 blur-md pointer-events-none" 
                   />
 
-                  {/* Layer 2 (Spinning Fiber Strand 1) */}
+                  {/* Multi-layered Swirling Neon Threads */}
+                  {/* Thread 1 (Solid Base) */}
+                  <path 
+                    d="M 100 100 C 120 80, 145 60, 165 75 C 190 95, 190 105, 165 125 C 145 140, 120 120, 100 100 C 80 80, 55 60, 35 75 C 10 95, 10 105, 35 125 C 55 140, 80 120, 100 100 Z" 
+                    stroke="url(#blend-grad)" 
+                    strokeWidth="2.5" 
+                    fill="none" 
+                    className="opacity-80"
+                  />
+
+                  {/* Thread 2 (Main fast flow) */}
                   <motion.path 
                     d="M 100 100 C 120 80, 145 60, 165 75 C 190 95, 190 105, 165 125 C 145 140, 120 120, 100 100 C 80 80, 55 60, 35 75 C 10 95, 10 105, 35 125 C 55 140, 80 120, 100 100 Z" 
-                    stroke="url(#infinity-gradient)" 
+                    stroke="url(#blend-grad)" 
                     strokeWidth="3.5" 
                     fill="none"
-                    strokeDasharray="30 15"
-                    animate={{ strokeDashoffset: [0, -100] }}
-                    transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+                    strokeDasharray="40 20"
+                    animate={{ strokeDashoffset: [0, -150] }}
+                    transition={{ duration: 7, repeat: Infinity, ease: "linear" }}
                   />
 
-                  {/* Layer 3 (Spinning Fiber Strand 2) */}
+                  {/* Thread 3 (Inner cyan thin strand) */}
                   <motion.path 
                     d="M 100 100 C 120 80, 145 60, 165 75 C 190 95, 190 105, 165 125 C 145 140, 120 120, 100 100 C 80 80, 55 60, 35 75 C 10 95, 10 105, 35 125 C 55 140, 80 120, 100 100 Z" 
-                    stroke="url(#infinity-gradient)" 
+                    stroke="#00f2fe" 
                     strokeWidth="1.5" 
                     fill="none"
-                    strokeDasharray="45 25"
-                    transform="rotate(1 100 100)"
-                    animate={{ strokeDashoffset: [0, -100] }}
-                    transition={{ duration: 6, repeat: Infinity, ease: "linear" }}
-                    className="opacity-40"
+                    strokeDasharray="50 30"
+                    transform="scale(0.98) translate(2, 2)"
+                    animate={{ strokeDashoffset: [0, -180] }}
+                    transition={{ duration: 5, repeat: Infinity, ease: "linear" }}
+                    className="opacity-90"
                   />
 
-                  {/* Layer 4 (Spinning Fiber Strand 3) */}
+                  {/* Thread 4 (Outer pink thin strand) */}
                   <motion.path 
                     d="M 100 100 C 120 80, 145 60, 165 75 C 190 95, 190 105, 165 125 C 145 140, 120 120, 100 100 C 80 80, 55 60, 35 75 C 10 95, 10 105, 35 125 C 55 140, 80 120, 100 100 Z" 
-                    stroke="url(#infinity-gradient)" 
-                    strokeWidth="1" 
+                    stroke="#ec4899" 
+                    strokeWidth="1.5" 
                     fill="none"
-                    strokeDasharray="60 35"
-                    transform="rotate(-1 100 100)"
-                    animate={{ strokeDashoffset: [0, -100] }}
-                    transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
-                    className="opacity-20"
+                    strokeDasharray="60 40"
+                    transform="scale(1.02) translate(-2, -2)"
+                    animate={{ strokeDashoffset: [0, 200] }}
+                    transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+                    className="opacity-80"
                   />
 
-                  {/* Telemetry Node Network Points (Breathing scale and opacity cycles) */}
-                  {/* Node 1: Crossover Center */}
-                  <motion.circle cx="100" cy="100" r="4.5" fill="#ffffff" animate={{ scale: [1, 1.25, 1], opacity: [0.7, 1, 0.7] }} transition={{ duration: 2.1, repeat: Infinity, ease: "easeInOut" }} />
-                  <circle cx="100" cy="100" r="9" stroke="#ffffff" strokeWidth="0.75" className="opacity-20" />
+                  {/* Thread 5 (Ultra-fine bright highlight) */}
+                  <motion.path 
+                    d="M 100 100 C 120 80, 145 60, 165 75 C 190 95, 190 105, 165 125 C 145 140, 120 120, 100 100 C 80 80, 55 60, 35 75 C 10 95, 10 105, 35 125 C 55 140, 80 120, 100 100 Z" 
+                    stroke="#ffffff" 
+                    strokeWidth="0.8" 
+                    fill="none"
+                    strokeDasharray="15 90"
+                    transform="rotate(0.5 100 100)"
+                    animate={{ strokeDashoffset: [0, -120] }}
+                    transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+                    className="opacity-95"
+                  />
 
-                  {/* Node 2: Right Lobe Upper Curve */}
-                  <motion.circle cx="132.5" cy="87.5" r="4" fill="#10b981" animate={{ scale: [1, 1.3, 1], opacity: [0.6, 1, 0.6] }} transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut", delay: 0.2 }} />
-                  <circle cx="132.5" cy="87.5" r="8" stroke="#10b981" strokeWidth="0.75" className="opacity-20" />
+                  {/* Thread 6 (Offset fluid strand) */}
+                  <motion.path 
+                    d="M 100 100 C 120 80, 145 60, 165 75 C 190 95, 190 105, 165 125 C 145 140, 120 120, 100 100 C 80 80, 55 60, 35 75 C 10 95, 10 105, 35 125 C 55 140, 80 120, 100 100 Z" 
+                    stroke="url(#fuchsia-grad)" 
+                    strokeWidth="1.2" 
+                    fill="none"
+                    strokeDasharray="80 30"
+                    transform="rotate(-1 100 100) scale(0.99)"
+                    animate={{ strokeDashoffset: [0, 160] }}
+                    transition={{ duration: 9, repeat: Infinity, ease: "linear" }}
+                    className="opacity-60"
+                  />
 
-                  {/* Node 3: Right Lobe Top Apex */}
-                  <motion.circle cx="165" cy="75" r="4.5" fill="#3b82f6" animate={{ scale: [1, 1.2, 1], opacity: [0.7, 1, 0.7] }} transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut", delay: 0.4 }} />
-                  <circle cx="165" cy="75" r="9" stroke="#3b82f6" strokeWidth="0.75" className="opacity-20" />
+                  {/* Thread 7 (Offset blue fluid strand) */}
+                  <motion.path 
+                    d="M 100 100 C 120 80, 145 60, 165 75 C 190 95, 190 105, 165 125 C 145 140, 120 120, 100 100 C 80 80, 55 60, 35 75 C 10 95, 10 105, 35 125 C 55 140, 80 120, 100 100 Z" 
+                    stroke="url(#blue-grad)" 
+                    strokeWidth="1.2" 
+                    fill="none"
+                    strokeDasharray="90 40"
+                    transform="rotate(1 100 100) scale(1.01)"
+                    animate={{ strokeDashoffset: [0, -160] }}
+                    transition={{ duration: 7.5, repeat: Infinity, ease: "linear" }}
+                    className="opacity-60"
+                  />
 
-                  {/* Node 4: Right Outer Tip */}
-                  <motion.circle cx="182.5" cy="100" r="4" fill="#ffffff" animate={{ scale: [1, 1.25, 1], opacity: [0.7, 1, 0.7] }} transition={{ duration: 2.1, repeat: Infinity, ease: "easeInOut", delay: 0.1 }} />
-                  <circle cx="182.5" cy="100" r="8" stroke="#ffffff" strokeWidth="0.75" className="opacity-20" />
+                  {/* Glowing Center Crossover Flare */}
+                  <circle cx="100" cy="100" r="24" fill="url(#center-flare)" className="opacity-95 pointer-events-none mix-blend-screen" />
+                  <circle cx="100" cy="100" r="4.5" fill="#ffffff" className="shadow-[0_0_15px_#ffffff] pointer-events-none" />
 
-                  {/* Node 5: Right Lobe Bottom Apex */}
-                  <motion.circle cx="165" cy="125" r="4.5" fill="#10b981" animate={{ scale: [1, 1.3, 1], opacity: [0.6, 1, 0.6] }} transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut", delay: 0.3 }} />
-                  <circle cx="165" cy="125" r="9" stroke="#10b981" strokeWidth="0.75" className="opacity-20" />
+                  {/* Twinkles and Floating Particles (Gold, blue, fuchsia, white) */}
+                  {/* Gold particles */}
+                  <motion.circle cx="60" cy="50" r="2" fill="#fef08a" animate={{ opacity: [0.3, 0.9, 0.3], scale: [0.8, 1.2, 0.8], y: [50, 48, 52, 50] }} transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut" }} />
+                  <motion.circle cx="140" cy="45" r="1.5" fill="#fde047" animate={{ opacity: [0.2, 1, 0.2], scale: [0.7, 1.3, 0.7], x: [140, 138, 142, 140] }} transition={{ duration: 2.8, repeat: Infinity, ease: "easeInOut", delay: 0.3 }} />
+                  <motion.circle cx="45" cy="155" r="2.5" fill="#fde047" animate={{ opacity: [0.4, 1, 0.4], scale: [0.9, 1.3, 0.9], y: [155, 158, 152, 155] }} transition={{ duration: 3.2, repeat: Infinity, ease: "easeInOut", delay: 0.6 }} />
+                  <motion.circle cx="160" cy="140" r="1.5" fill="#fef08a" animate={{ opacity: [0.1, 0.8, 0.1], scale: [0.6, 1.1, 0.6] }} transition={{ duration: 2.6, repeat: Infinity, ease: "easeInOut", delay: 0.9 }} />
 
-                  {/* Node 6: Right Lobe Lower Curve */}
-                  <motion.circle cx="132.5" cy="112.5" r="4" fill="#3b82f6" animate={{ scale: [1, 1.2, 1], opacity: [0.7, 1, 0.7] }} transition={{ duration: 2.3, repeat: Infinity, ease: "easeInOut", delay: 0.5 }} />
-                  <circle cx="132.5" cy="112.5" r="8" stroke="#3b82f6" strokeWidth="0.75" className="opacity-20" />
+                  {/* Blue / Purple particles */}
+                  <motion.circle cx="75" cy="70" r="1.2" fill="#60a5fa" animate={{ opacity: [0.2, 0.8, 0.2], scale: [0.7, 1.2, 0.7] }} transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut", delay: 0.1 }} />
+                  <motion.circle cx="125" cy="70" r="1.8" fill="#c084fc" animate={{ opacity: [0.3, 0.9, 0.3], scale: [0.8, 1.3, 0.8] }} transition={{ duration: 2.1, repeat: Infinity, ease: "easeInOut", delay: 0.5 }} />
+                  <motion.circle cx="70" cy="120" r="2" fill="#a78bfa" animate={{ opacity: [0.2, 1, 0.2], scale: [0.7, 1.3, 0.7] }} transition={{ duration: 2.7, repeat: Infinity, ease: "easeInOut", delay: 0.8 }} />
+                  <motion.circle cx="130" cy="125" r="1.5" fill="#3b82f6" animate={{ opacity: [0.3, 0.8, 0.3], scale: [0.6, 1.2, 0.6] }} transition={{ duration: 2.9, repeat: Infinity, ease: "easeInOut", delay: 0.4 }} />
 
-                  {/* Node 7: Left Lobe Lower Curve */}
-                  <motion.circle cx="67.5" cy="87.5" r="4.5" fill="#10b981" animate={{ scale: [1, 1.3, 1], opacity: [0.6, 1, 0.6] }} transition={{ duration: 2.6, repeat: Infinity, ease: "easeInOut", delay: 0.4 }} />
-                  <circle cx="67.5" cy="87.5" r="9" stroke="#10b981" strokeWidth="0.75" className="opacity-20" />
-
-                  {/* Node 8: Left Lobe Top Apex */}
-                  <motion.circle cx="35" cy="75" r="4" fill="#3b82f6" animate={{ scale: [1, 1.2, 1], opacity: [0.7, 1, 0.7] }} transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut", delay: 0.6 }} />
-                  <circle cx="35" cy="75" r="8" stroke="#3b82f6" strokeWidth="0.75" className="opacity-20" />
-
-                  {/* Node 9: Left Outer Tip */}
-                  <motion.circle cx="17.5" cy="100" r="4" fill="#ffffff" animate={{ scale: [1, 1.25, 1], opacity: [0.7, 1, 0.7] }} transition={{ duration: 2.1, repeat: Infinity, ease: "easeInOut", delay: 0.3 }} />
-                  <circle cx="17.5" cy="100" r="8" stroke="#ffffff" strokeWidth="0.75" className="opacity-20" />
-
-                  {/* Node 10: Left Lobe Bottom Apex */}
-                  <motion.circle cx="35" cy="125" r="4.5" fill="#10b981" animate={{ scale: [1, 1.3, 1], opacity: [0.6, 1, 0.6] }} transition={{ duration: 2.7, repeat: Infinity, ease: "easeInOut", delay: 0.5 }} />
-                  <circle cx="35" cy="125" r="9" stroke="#10b981" strokeWidth="0.75" className="opacity-20" />
-
-                  {/* Node 11: Left Lobe Upper Curve */}
-                  <motion.circle cx="67.5" cy="112.5" r="4" fill="#3b82f6" animate={{ scale: [1, 1.2, 1], opacity: [0.7, 1, 0.7] }} transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut", delay: 0.7 }} />
-                  <circle cx="67.5" cy="112.5" r="8" stroke="#3b82f6" strokeWidth="0.75" className="opacity-20" />
+                  {/* White glowing twinkles */}
+                  <motion.circle cx="100" cy="65" r="2" fill="#ffffff" animate={{ opacity: [0.2, 1, 0.2], scale: [0.8, 1.4, 0.8] }} transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut", delay: 1.1 }} />
+                  <motion.circle cx="35" cy="135" r="1.5" fill="#ffffff" animate={{ opacity: [0.1, 0.9, 0.1], scale: [0.6, 1.2, 0.6] }} transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut", delay: 0.7 }} />
+                  <motion.circle cx="165" cy="65" r="2.5" fill="#ffffff" animate={{ opacity: [0.3, 1, 0.3], scale: [0.8, 1.3, 0.8] }} transition={{ duration: 2.3, repeat: Infinity, ease: "easeInOut", delay: 1.4 }} />
+                  <motion.circle cx="90" cy="135" r="1" fill="#ffffff" animate={{ opacity: [0.2, 0.8, 0.2], scale: [0.7, 1.2, 0.7] }} transition={{ duration: 2.9, repeat: Infinity, ease: "easeInOut", delay: 0.2 }} />
                 </svg>
               </motion.div>
             </div>
