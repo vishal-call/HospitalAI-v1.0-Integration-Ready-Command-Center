@@ -442,6 +442,7 @@ class ScoreRecord(Base):
 
     patient: Mapped["Patient"] = relationship("Patient", foreign_keys=[patient_id])
     policy: Mapped["ScoringPolicy"] = relationship("ScoringPolicy", foreign_keys=[policy_id])
+    explanation: Mapped["ScoreExplanation"] = relationship("ScoreExplanation", back_populates="score_record", uselist=False)
 
 
 class ScoreExplanation(Base):
@@ -452,7 +453,7 @@ class ScoreExplanation(Base):
     parameter_breakdown: Mapped[dict] = mapped_column(JSON, nullable=False)
     red_flags: Mapped[list] = mapped_column(JSON, nullable=False)
 
-    score_record: Mapped["ScoreRecord"] = relationship("ScoreRecord", foreign_keys=[score_record_id])
+    score_record: Mapped["ScoreRecord"] = relationship("ScoreRecord", foreign_keys=[score_record_id], back_populates="explanation")
 
 
 class DoctorFeedback(Base):
@@ -704,6 +705,7 @@ class OperationalLog(Base):
     event_type: Mapped[str] = mapped_column(String(100), nullable=False)
     timestamp: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
     payload: Mapped[dict] = mapped_column(JSONB, nullable=False)
+    cryptographic_hash: Mapped[Optional[str]] = mapped_column(String(64), nullable=True)
 
     patient: Mapped[Optional["Patient"]] = relationship("Patient", foreign_keys=[patient_id])
 

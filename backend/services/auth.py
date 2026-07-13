@@ -132,3 +132,39 @@ def check_roles(allowed_roles: List[UserRole]):
             )
         return current_user
     return role_checker
+
+
+async def get_optional_current_user(
+    request: Request,
+    db: AsyncSession = Depends(get_db)
+) -> Optional[models.User]:
+    """
+    FastAPI dependency injection to optionally validate JWT token.
+    Returns user if authenticated, or None if unauthenticated.
+    """
+    token = request.cookies.get("auth_token")
+    if not token:
+        auth_header = request.headers.get("Authorization")
+        if auth_header and auth_header.startswith("Bearer "):
+            token = auth_header.split(" ", 1)[1]
+            
+    if not token:
+        return None
+        
+    payload = decode_access_token(token)
+    if not payload:
+        return None
+        
+    username: str = payload.get("sub")
+    if not username:
+        return None
+        
+    res = await db.execute(
+        select(models.User)
+        .where(models.User.username == username)
+    )
+    user = res.scalar_one_or_none()
+    if not user or not user.is_active:
+        return None
+        
+    return user

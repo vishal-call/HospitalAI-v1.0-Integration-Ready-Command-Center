@@ -15,7 +15,7 @@ import crud
 import schemas
 import models
 from routes.auth_routes import router as auth_router
-from services.auth import check_roles
+from services.auth import check_roles, get_optional_current_user
 
 from services.logging_config import configure_logging
 import structlog
@@ -597,12 +597,38 @@ async def get_beds(ward_id: Optional[int] = None, db: AsyncSession = Depends(get
     return await crud.get_beds(db, ward_id=ward_id)
 
 @app.get("/api/patients", response_model=List[schemas.PatientResponse])
-async def get_patients(db: AsyncSession = Depends(get_db)):
+async def get_patients(
+    db: AsyncSession = Depends(get_db),
+    current_user: Optional[models.User] = Depends(get_optional_current_user)
+):
     """Retrieve all currently active admitted patients."""
-    return await crud.get_patients(db)
+    patients = await crud.get_patients(db)
+    
+    # Audit log access to patient records
+    user_id = current_user.id if current_user else None
+    role = current_user.role.value if current_user and hasattr(current_user.role, "value") else (current_user.role if current_user else "UNAUTHENTICATED")
+    username = current_user.username if current_user else "system"
+    
+    for p in patients:
+        await crud.log_operational_event(
+            db,
+            patient_id=p.id,
+            event_type="PHI_ACCESSED",
+            payload={
+                "performing_user_id": user_id,
+                "performing_username": username,
+                "performing_role": role,
+                "action": "LIST_PATIENTS"
+            }
+        )
+    return patients
 
 @app.get("/api/patients/{id}")
-async def get_patient_detail(id: int, db: AsyncSession = Depends(get_db)):
+async def get_patient_detail(
+    id: int, 
+    db: AsyncSession = Depends(get_db),
+    current_user: Optional[models.User] = Depends(get_optional_current_user)
+):
     """Retrieve detailed clinical information for a single patient, including their latest score record."""
     from sqlalchemy import select
     from sqlalchemy.orm import selectinload
@@ -617,6 +643,23 @@ async def get_patient_detail(id: int, db: AsyncSession = Depends(get_db)):
     patient = patient_res.scalar_one_or_none()
     if not patient:
         raise HTTPException(status_code=404, detail="Patient not found")
+
+    # Audit log access to patient record
+    user_id = current_user.id if current_user else None
+    role = current_user.role.value if current_user and hasattr(current_user.role, "value") else (current_user.role if current_user else "UNAUTHENTICATED")
+    username = current_user.username if current_user else "system"
+    
+    await crud.log_operational_event(
+        db,
+        patient_id=patient.id,
+        event_type="PHI_ACCESSED",
+        payload={
+            "performing_user_id": user_id,
+            "performing_username": username,
+            "performing_role": role,
+            "action": "VIEW_PATIENT_DETAIL"
+        }
+    )
 
     # Query latest score record with explanation
     score_res = await db.execute(
@@ -1110,10 +1153,32 @@ async def get_audit_logs(
 
 
 @app.get("/api/patients/{id}/timeline", response_model=List[schemas.ClinicalEventResponse])
-async def get_patient_timeline(id: int, db: AsyncSession = Depends(get_db)):
+async def get_patient_timeline(
+    id: int, 
+    db: AsyncSession = Depends(get_db),
+    current_user: Optional[models.User] = Depends(get_optional_current_user)
+):
     """Retrieve the immutable clinical event timeline for a patient."""
     from sqlalchemy import select
     import models
+
+    # Audit log access to patient timeline record
+    user_id = current_user.id if current_user else None
+    role = current_user.role.value if current_user and hasattr(current_user.role, "value") else (current_user.role if current_user else "UNAUTHENTICATED")
+    username = current_user.username if current_user else "system"
+    
+    await crud.log_operational_event(
+        db,
+        patient_id=id,
+        event_type="PHI_ACCESSED",
+        payload={
+            "performing_user_id": user_id,
+            "performing_username": username,
+            "performing_role": role,
+            "action": "VIEW_PATIENT_TIMELINE"
+        }
+    )
+
     query = (
         select(models.ClinicalEvent)
         .where(models.ClinicalEvent.patient_id == id)

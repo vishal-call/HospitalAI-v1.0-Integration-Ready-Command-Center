@@ -54,7 +54,7 @@ async def login(
     is_secure = (
         request.url.scheme == "https" or 
         request.headers.get("x-forwarded-proto") == "https" or 
-        os.getenv("DATABASE_URL") is not None
+        (os.getenv("DATABASE_URL") is not None and request.url.hostname not in ["localhost", "127.0.0.1"])
     )
     samesite_flag = "none" if is_secure else "lax"
     secure_flag = True if is_secure else False
@@ -219,7 +219,7 @@ async def sso_callback(
     is_secure = (
         request.url.scheme == "https" or 
         request.headers.get("x-forwarded-proto") == "https" or 
-        os.getenv("DATABASE_URL") is not None
+        (os.getenv("DATABASE_URL") is not None and request.url.hostname not in ["localhost", "127.0.0.1"])
     )
     samesite_flag = "none" if is_secure else "lax"
     secure_flag = True if is_secure else False

@@ -102,10 +102,39 @@ async def log_operational_event(
     event_type: str,
     payload: dict
 ) -> models.OperationalLog:
+    import hashlib
+    import json
+    from datetime import datetime
+
+    # 1. Query the immediately preceding log record ordered by id.desc()
+    prev_log_res = await db.execute(
+        select(models.OperationalLog)
+        .order_by(models.OperationalLog.id.desc())
+        .limit(1)
+    )
+    prev_log = prev_log_res.scalar_one_or_none()
+    prev_hash = prev_log.cryptographic_hash if (prev_log and prev_log.cryptographic_hash) else "0" * 64
+
+    # 2. Get current timestamp
+    timestamp = datetime.utcnow()
+    timestamp_iso = timestamp.isoformat()
+
+    # 3. Format the payload sorted keys for deterministic serialization
+    payload_json = json.dumps(payload, sort_keys=True)
+
+    # 4. Construct hash input exactly as: "{prev_hash}|{timestamp_iso}|{event_type}|{payload_json}"
+    hash_input = f"{prev_hash}|{timestamp_iso}|{event_type}|{payload_json}"
+
+    # 5. Compute SHA-256 hash
+    computed_hash = hashlib.sha256(hash_input.encode('utf-8')).hexdigest()
+
+    # 6. Create the log with the computed hash
     log = models.OperationalLog(
         patient_id=patient_id,
         event_type=event_type,
-        payload=payload
+        timestamp=timestamp,
+        payload=payload,
+        cryptographic_hash=computed_hash
     )
     db.add(log)
     await db.flush()
@@ -163,7 +192,7 @@ async def admit_patient(db: AsyncSession, payload: schemas.PatientAdmitPayload) 
         .where(models.Bed.ward_id == payload.target_ward_id)
         .where(models.Bed.status == models.BedStatus.AVAILABLE)
         .limit(1)
-        .with_for_update()
+        .with_for_update(nowait=False)
     )
     available_bed = bed_result.scalar_one_or_none()
     
@@ -411,7 +440,7 @@ async def action_recommendation(db: AsyncSession, rec_id: int, action: str, user
                     source_bed_result = await db.execute(
                         select(models.Bed)
                         .where(models.Bed.id == recommendation.source_bed_id)
-                        .with_for_update()
+                        .with_for_update(nowait=False)
                     )
                     source_bed = source_bed_result.scalar_one_or_none()
                     if source_bed:
@@ -475,7 +504,7 @@ async def action_recommendation(db: AsyncSession, rec_id: int, action: str, user
                 beds_map = {}
                 for bid in lock_ids:
                     bed_res = await db.execute(
-                        select(models.Bed).where(models.Bed.id == bid).with_for_update()
+                        select(models.Bed).where(models.Bed.id == bid).with_for_update(nowait=False)
                     )
                     beds_map[bid] = bed_res.scalar_one_or_none()
                     
@@ -570,7 +599,7 @@ async def action_recommendation(db: AsyncSession, rec_id: int, action: str, user
             target_bed_result = await db.execute(
                 select(models.Bed)
                 .where(models.Bed.id == recommendation.target_bed_id)
-                .with_for_update()
+                .with_for_update(nowait=False)
             )
             target_bed = target_bed_result.scalar_one_or_none()
             
@@ -591,7 +620,7 @@ async def action_recommendation(db: AsyncSession, rec_id: int, action: str, user
                 source_bed_result = await db.execute(
                     select(models.Bed)
                     .where(models.Bed.id == recommendation.source_bed_id)
-                    .with_for_update()
+                    .with_for_update(nowait=False)
                 )
                 source_bed = source_bed_result.scalar_one_or_none()
                 if source_bed:
@@ -807,7 +836,7 @@ async def update_bed_status(db: AsyncSession, bed_id: int, status_val: models.Be
             select(models.Bed)
             .options(selectinload(models.Bed.patient))
             .where(models.Bed.id == bed_id)
-            .with_for_update()
+            .with_for_update(nowait=False)
         )
         bed = result.scalar_one_or_none()
         if not bed:
