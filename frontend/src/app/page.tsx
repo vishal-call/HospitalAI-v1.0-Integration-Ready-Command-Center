@@ -141,8 +141,8 @@ export default function LandingPage() {
               variants={itemVariants}
               className="text-4xl sm:text-6xl font-black tracking-tight leading-[1.08] mb-6 bg-clip-text text-transparent bg-gradient-to-r from-white to-white/60"
             >
-              Intelligent Clinical <br />
-              Logistics & Telemetry.
+              Autonomous Clinical <br />
+              Intelligence & Command.
             </motion.h1>
 
             {/* Subheadline */}
@@ -184,42 +184,73 @@ export default function LandingPage() {
             className="lg:col-span-5 w-full flex justify-center relative"
           >
             {/* The Main AWSMD Glass container */}
-            <div className="w-full aspect-square bg-white/5 backdrop-blur-3xl border border-white/10 shadow-2xl rounded-[2rem] flex items-center justify-center p-6 relative overflow-hidden">
+            <div className="w-full aspect-square bg-white/5 backdrop-blur-3xl border border-white/10 shadow-2xl rounded-[2rem] flex flex-col justify-between p-6 relative overflow-hidden">
               
-              {/* Matrix dots grid background */}
-              <div className="absolute inset-0 bg-[radial-gradient(#1e293b_1px,transparent_1px)] [background-size:20px_20px] opacity-35" />
-
-              {/* Pulsing Core */}
-              <motion.div
-                animate={{ scale: [1, 1.15, 1], opacity: [0.5, 0.8, 0.5] }}
-                transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
-                className="h-28 w-28 rounded-full bg-gradient-to-tr from-emerald-500 to-blue-500 blur-xl absolute"
-              />
-
-              {/* Layered concentric orbits */}
-              <motion.div 
-                animate={{ rotate: 360 }}
-                transition={{ repeat: Infinity, duration: 25, ease: "linear" }}
-                className="absolute h-[70%] aspect-square rounded-full border border-white/10 flex items-center justify-center"
-              />
-              <motion.div 
-                animate={{ rotate: -360 }}
-                transition={{ repeat: Infinity, duration: 35, ease: "linear" }}
-                className="absolute h-[50%] aspect-square rounded-full border border-dashed border-white/15 flex items-center justify-center"
-              />
-
-              {/* Glowing SVG nodes & links */}
-              <svg className="w-full h-full relative z-10" viewBox="0 0 400 400">
-                <line x1="200" y1="200" x2="80" y2="100" stroke="rgba(255,255,255,0.15)" strokeWidth="1.5" />
-                <line x1="200" y1="200" x2="320" y2="120" stroke="rgba(255,255,255,0.15)" strokeWidth="1.5" />
-                <line x1="200" y1="200" x2="140" y2="300" stroke="rgba(255,255,255,0.15)" strokeWidth="1.5" />
-                <line x1="200" y1="200" x2="280" y2="280" stroke="rgba(255,255,255,0.15)" strokeWidth="1.5" />
-                {/* Nodes */}
-                <circle cx="80" cy="100" r="4" fill="#10b981" />
-                <circle cx="320" cy="120" r="4" fill="#3b82f6" />
-                <circle cx="140" cy="300" r="4" fill="#6366f1" />
-                <circle cx="280" cy="280" r="4" fill="#10b981" />
+              {/* Dark subtle background grid pattern */}
+              <svg className="absolute inset-0 w-full h-full text-slate-800/10 pointer-events-none" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                  <pattern id="monitor-grid" width="20" height="20" patternUnits="userSpaceOnUse">
+                    <rect width="20" height="20" fill="none" />
+                    <path d="M 20 0 L 0 0 0 20" fill="none" stroke="rgba(255, 255, 255, 0.04)" strokeWidth="0.5" />
+                  </pattern>
+                </defs>
+                <rect width="100%" height="100%" fill="url(#monitor-grid)" />
               </svg>
+
+              {/* Monitor Header */}
+              <div className="w-full flex items-center justify-between border-b border-white/5 pb-3 relative z-10">
+                <div className="flex items-center gap-2">
+                  <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                  <span className="text-[10px] font-mono text-slate-400 font-bold uppercase tracking-wider">Telemetry Monitor // Lead II</span>
+                </div>
+                <span className="text-[10px] font-mono text-emerald-400 font-bold">HR: 72 BPM</span>
+              </div>
+
+              {/* ECG & SpO2 Signal Waveforms Area */}
+              <div className="flex-1 flex flex-col justify-around py-4 z-10 w-full">
+                {/* ECG Track */}
+                <div className="w-full h-1/2 relative border-b border-white/5 py-2">
+                  <span className="absolute top-1 left-2 text-[9px] font-mono text-emerald-400 font-bold">ECG II</span>
+                  <svg className="w-full h-full" viewBox="0 0 300 100" preserveAspectRatio="none">
+                    <motion.path
+                      d="M0 50 H 80 Q 90 40, 100 50 H 110 L 115 65 L 125 15 L 135 85 L 140 50 H 150 Q 165 35, 180 50 H 380 Q 390 40, 400 50 H 410 L 415 65 L 425 15 L 435 85 L 440 50 H 450 Q 465 35, 480 50 H 600"
+                      stroke="#10b981"
+                      strokeWidth="2.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      fill="none"
+                      animate={{ x: [0, -300] }}
+                      transition={{
+                        duration: 3.5,
+                        repeat: Infinity,
+                        ease: "linear"
+                      }}
+                    />
+                  </svg>
+                </div>
+
+                {/* SpO2 Track */}
+                <div className="w-full h-1/2 relative py-2">
+                  <span className="absolute top-1 left-2 text-[9px] font-mono text-blue-400 font-bold">SPO2</span>
+                  <span className="absolute top-1 right-2 text-[9px] font-mono text-blue-400 font-bold">SpO2: 98%</span>
+                  <svg className="w-full h-full" viewBox="0 0 150 80" preserveAspectRatio="none">
+                    <motion.path
+                      d="M0 40 Q 25 15, 50 40 T 100 40 H 150 Q 175 15, 200 40 T 250 40 H 300"
+                      stroke="#3b82f6"
+                      strokeWidth="2.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      fill="none"
+                      animate={{ x: [0, -150] }}
+                      transition={{
+                        duration: 2.8,
+                        repeat: Infinity,
+                        ease: "linear"
+                      }}
+                    />
+                  </svg>
+                </div>
+              </div>
             </div>
 
             {/* FLOATING DATA WIDGETS (Micro-Glass) */}
@@ -281,16 +312,28 @@ export default function LandingPage() {
             </div>
 
             {/* Mock Time Series Chart */}
-            <svg className="w-full h-24 text-emerald-400 mt-6" viewBox="0 0 500 100" fill="none">
-              <path d="M0 80 Q 50 60, 100 80 T 200 40 T 300 70 T 400 20 T 500 10" stroke="#10b981" strokeWidth="3" strokeLinecap="round" />
-              <path d="M0 80 Q 50 60, 100 80 T 200 40 T 300 70 T 400 20 T 500 10 L 500 100 L 0 100 Z" fill="url(#gradientArea)" className="opacity-10" />
-              <defs>
-                <linearGradient id="gradientArea" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#10b981" />
-                  <stop offset="100%" stopColor="#10b981" stopOpacity="0" />
-                </linearGradient>
-              </defs>
-            </svg>
+            <div className="w-full h-24 overflow-hidden mt-6 relative rounded-xl">
+              <motion.svg 
+                className="w-[200%] h-full text-emerald-400 absolute top-0 left-0" 
+                viewBox="0 0 1000 100" 
+                fill="none"
+                animate={{ x: ["0%", "-50%"] }}
+                transition={{
+                  duration: 10,
+                  repeat: Infinity,
+                  ease: "linear"
+                }}
+              >
+                <path d="M0 80 Q 50 60, 100 80 T 200 40 T 300 70 T 400 20 T 500 80 Q 550 60, 600 80 T 700 40 T 800 70 T 900 20 T 1000 80" stroke="#10b981" strokeWidth="3" strokeLinecap="round" />
+                <path d="M0 80 Q 50 60, 100 80 T 200 40 T 300 70 T 400 20 T 500 80 Q 550 60, 600 80 T 700 40 T 800 70 T 900 20 T 1000 80 L 1000 100 L 0 100 Z" fill="url(#gradientArea)" className="opacity-10" />
+                <defs>
+                  <linearGradient id="gradientArea" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#10b981" />
+                    <stop offset="100%" stopColor="#10b981" stopOpacity="0" />
+                  </linearGradient>
+                </defs>
+              </motion.svg>
+            </div>
           </motion.div>
 
           {/* Block 2 (col-span-4): Multi-Agent Logistics */}
