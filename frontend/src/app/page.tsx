@@ -14,13 +14,18 @@ import {
   Check, 
   X, 
   BookOpen, 
-  Workflow 
+  Workflow,
+  Lock,
+  Server,
+  ChevronDown,
+  Network
 } from "lucide-react";
 import { useAuth } from "@/lib/AuthContext";
 
 export default function LandingPage() {
   const { user } = useAuth();
   const [isWhitepaperOpen, setIsWhitepaperOpen] = useState(false);
+  const [openAccordion, setOpenAccordion] = useState<number | null>(null);
 
   // Animations configuration
   const containerVariants = {
@@ -28,34 +33,52 @@ export default function LandingPage() {
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.15,
+        staggerChildren: 0.1,
         delayChildren: 0.1
       }
     }
   };
 
   const itemVariants = {
-    hidden: { y: 20, opacity: 0 },
+    hidden: { y: 25, opacity: 0 },
     visible: {
       y: 0,
       opacity: 1,
-      transition: { type: "spring" as const, stiffness: 100, damping: 15 }
+      transition: { type: "spring" as const, stiffness: 100, damping: 16 }
     }
   };
 
-  const pulseTransition = {
-    repeat: Infinity,
-    duration: 3,
-    ease: "easeInOut"
+  const scrollRevealVariants = {
+    hidden: { y: 35, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1] as const }
+    }
   };
 
+  const faqItems = [
+    {
+      q: "How does the platform address HIPAA Compliance?",
+      a: "HospitalAI enforces strict data security policies, encrypting all data in transit using TLS 1.3 and all data at rest using AES-256 transparent database encryption. User authentication is secured via HttpOnly, Secure JWT cookies, preventing XSS-based clinical token theft, while session audits are written to an immutable event ledger."
+    },
+    {
+      q: "How is route-level clinical access restricted?",
+      a: "The API layer enforces a cryptographic, role-based access control (RBAC) model. Roles like DOCTOR and NURSE grant read-only telemetry views, COORDINATORS hold permissions to approve patient relocations, and ADMIN roles are required to decommission wards, provision beds, or patch staff credentials."
+    },
+    {
+      q: "How does the system ensure double-allocation bed prevention?",
+      a: "HospitalAI's transaction layers utilize database-level pessimistic locking. When a coordinator begins reviewing a patient recommendation, the target bed row is locked at the database transaction boundary, preventing parallel triage coordinators from double-admitting or allocating that same clinical space."
+    }
+  ];
+
   return (
-    <div className="min-h-screen bg-[#07070a] text-slate-100 font-sans relative overflow-hidden selection:bg-emerald-500/20 selection:text-emerald-300">
+    <div className="min-h-screen bg-[#060608] text-slate-100 font-sans relative overflow-hidden selection:bg-emerald-500/20 selection:text-emerald-300">
       
       {/* BACKGROUND glowing atmosphere */}
-      <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-blue-600/10 blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-[20%] right-[-10%] w-[60%] h-[60%] rounded-full bg-emerald-500/5 blur-[150px] pointer-events-none" />
-      <div className="absolute top-[30%] left-[40%] w-[350px] h-[350px] rounded-full bg-indigo-500/5 blur-[100px] pointer-events-none" />
+      <div className="absolute top-[-15%] left-[-10%] w-[55%] h-[55%] rounded-full bg-blue-600/10 blur-[130px] pointer-events-none" />
+      <div className="absolute bottom-[15%] right-[-10%] w-[65%] h-[65%] rounded-full bg-emerald-500/5 blur-[160px] pointer-events-none" />
+      <div className="absolute top-[25%] left-[35%] w-[400px] h-[400px] rounded-full bg-indigo-500/5 blur-[120px] pointer-events-none" />
 
       {/* FLOATING NAVIGATION BAR */}
       <motion.nav 
@@ -78,19 +101,21 @@ export default function LandingPage() {
 
           {/* Links */}
           <div className="hidden sm:flex items-center gap-6">
-            <a href="#features" className="text-xs font-semibold text-slate-400 hover:text-white transition-colors">Subsystems</a>
-            <a href="#security" className="text-xs font-semibold text-slate-400 hover:text-white transition-colors" onClick={(e) => { e.preventDefault(); setIsWhitepaperOpen(true); }}>Security</a>
-            <a href="#telemetry" className="text-xs font-semibold text-slate-400 hover:text-white transition-colors">Performance</a>
+            <a href="#architecture" className="text-xs font-semibold text-slate-400 hover:text-white transition-colors">Architecture</a>
+            <a href="#telemetry" className="text-xs font-semibold text-slate-400 hover:text-white transition-colors">Telemetry</a>
+            <a href="#faq" className="text-xs font-semibold text-slate-400 hover:text-white transition-colors">Compliance</a>
           </div>
 
           {/* CTA */}
-          <Link 
-            href={user ? "/dashboard" : "/login"}
-            className="flex items-center gap-1.5 px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-full text-xs font-bold text-white shadow-lg transition-all hover:scale-[1.02] active:scale-[0.98]"
-          >
-            Access Command Center
-            <ArrowUpRight className="h-3.5 w-3.5" />
-          </Link>
+          <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+            <Link 
+              href={user ? "/dashboard" : "/login"}
+              className="flex items-center gap-1.5 px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-full text-xs font-bold text-white shadow-lg transition-all"
+            >
+              Access Command Center
+              <ArrowUpRight className="h-3.5 w-3.5" />
+            </Link>
+          </motion.div>
         </div>
       </motion.nav>
 
@@ -132,20 +157,24 @@ export default function LandingPage() {
 
           {/* Action CTAs */}
           <motion.div variants={itemVariants} className="flex flex-col sm:flex-row items-center gap-4 mb-20 w-full sm:w-auto">
-            <Link 
-              href={user ? "/dashboard" : "/login"}
-              className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-3.5 bg-emerald-500 hover:bg-emerald-400 text-[#07070a] font-extrabold text-sm rounded-xl transition-all shadow-xl shadow-emerald-500/20 hover:shadow-emerald-500/30 hover:scale-[1.02]"
-            >
-              Launch Platform
-              <ArrowRight className="h-4 w-4" />
-            </Link>
-            <button 
+            <motion.div whileHover={{ scale: 1.02, boxShadow: "0 0 20px rgba(16, 185, 129, 0.4)" }} whileTap={{ scale: 0.98 }} className="w-full sm:w-auto">
+              <Link 
+                href={user ? "/dashboard" : "/login"}
+                className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-3.5 bg-emerald-500 text-[#060608] font-extrabold text-sm rounded-xl transition-all shadow-xl shadow-emerald-500/15"
+              >
+                Launch Platform
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </motion.div>
+            <motion.button 
+              whileHover={{ scale: 1.02, backgroundColor: "rgba(255,255,255,0.08)" }} 
+              whileTap={{ scale: 0.98 }}
               onClick={() => setIsWhitepaperOpen(true)}
-              className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-3.5 bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold text-sm rounded-xl transition-all hover:scale-[1.02]"
+              className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-3.5 bg-white/5 border border-white/10 text-white font-bold text-sm rounded-xl transition-all"
             >
               View Whitepaper
               <BookOpen className="h-4 w-4" />
-            </button>
+            </motion.button>
           </motion.div>
         </motion.div>
 
@@ -177,7 +206,27 @@ export default function LandingPage() {
           </motion.div>
 
           {/* Animated Sine Heartbeat Waveform SVG */}
-          <svg className="w-[85%] h-[40%] text-emerald-400 relative z-10" viewBox="0 0 800 200" fill="none">
+          <svg className="w-[85%] h-[40%] relative z-10" viewBox="0 0 800 200" fill="none">
+            {/* Live undulating secondary wave */}
+            <motion.path
+              d="M0 100 Q 100 60, 200 100 T 400 100 T 600 100 T 800 100"
+              stroke="rgba(16, 185, 129, 0.12)"
+              strokeWidth="2"
+              fill="none"
+              animate={{
+                d: [
+                  "M0 100 Q 100 60, 200 100 T 400 100 T 600 100 T 800 100",
+                  "M0 100 Q 100 140, 200 100 T 400 100 T 600 100 T 800 100",
+                  "M0 100 Q 100 60, 200 100 T 400 100 T 600 100 T 800 100"
+                ]
+              }}
+              transition={{
+                duration: 5,
+                repeat: Infinity,
+                ease: "easeInOut"
+              }}
+            />
+
             <motion.path
               d="M0 100 H300 L320 40 L340 160 L360 80 L370 120 L380 100 H800"
               stroke="url(#gradientWave)"
@@ -217,88 +266,176 @@ export default function LandingPage() {
         </motion.div>
       </section>
 
-      {/* FEATURE GRID */}
-      <section id="features" className="max-w-7xl mx-auto px-6 py-20 relative z-10 border-t border-white/5">
+      {/* BLOCK A: The "Engine Framework" (Deep Architectural Technical Specs) */}
+      <motion.section 
+        id="architecture"
+        variants={scrollRevealVariants}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, margin: "-100px" }}
+        className="max-w-7xl mx-auto px-6 py-20 relative z-10 border-t border-white/5"
+      >
         <div className="flex flex-col items-center text-center mb-16">
-          <h2 className="text-xs uppercase font-mono tracking-widest text-indigo-400 font-bold mb-3">Enterprise Capability Grid</h2>
-          <h3 className="text-2xl sm:text-4xl font-extrabold text-white">Engineered for Critical Environments</h3>
+          <h2 className="text-xs uppercase font-mono tracking-widest text-indigo-400 font-bold mb-3">Engine Framework</h2>
+          <h3 className="text-2xl sm:text-4xl font-extrabold text-white">Deep Architectural Specifications</h3>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {/* Card 1 */}
+          {/* Spec Card 1 */}
           <motion.div 
-            whileHover={{ y: -5, borderColor: "rgba(255,255,255,0.2)" }}
-            className="bg-white/5 border border-white/10 rounded-2xl p-8 backdrop-blur-xl flex flex-col h-[320px] justify-between transition-colors duration-300"
+            whileHover={{ y: -5, borderColor: "rgba(255,255,255,0.18)" }}
+            className="bg-white/5 border border-white/10 rounded-2xl p-8 backdrop-blur-xl flex flex-col justify-between h-[320px] transition-colors"
           >
-            <div className="h-10 w-10 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400">
-              <Zap className="h-5 w-5" />
+            <div className="h-11 w-11 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400">
+              <Server className="h-5.5 w-5.5" />
             </div>
             <div>
-              <h4 className="font-extrabold text-lg text-white mb-2">Real-Time EWS Precision</h4>
-              <p className="text-xs text-slate-400 leading-relaxed">
-                Dynamically evaluates vital telemetry data using custom NEWS2 policies to calculate patient risk indicators and prevent sudden deterioration.
+              <h4 className="font-extrabold text-lg text-white mb-2">FastAPI Async Event Bus</h4>
+              <p className="text-xs text-slate-455 text-slate-400 leading-relaxed">
+                Asynchronous event loop execution delivers subsecond EWS calculations and high-performance WebSockets, routing real-time vital telemetry streams to active clinician screens without lag.
               </p>
             </div>
           </motion.div>
 
-          {/* Card 2 */}
+          {/* Spec Card 2 */}
           <motion.div 
-            whileHover={{ y: -5, borderColor: "rgba(255,255,255,0.2)" }}
-            className="bg-white/5 border border-white/10 rounded-2xl p-8 backdrop-blur-xl flex flex-col h-[320px] justify-between transition-colors duration-300"
+            whileHover={{ y: -5, borderColor: "rgba(255,255,255,0.18)" }}
+            className="bg-white/5 border border-white/10 rounded-2xl p-8 backdrop-blur-xl flex flex-col justify-between h-[320px] transition-colors"
           >
-            <div className="h-10 w-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
-              <Workflow className="h-5 w-5" />
+            <div className="h-11 w-11 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+              <Network className="h-5.5 w-5.5" />
             </div>
             <div>
-              <h4 className="font-extrabold text-lg text-white mb-2">Autonomous Routing</h4>
-              <p className="text-xs text-slate-400 leading-relaxed">
-                Multi-Agent orchestrators automatically broker capacity constraints, resolve step-down transfers, and manage inter-hospital agreements.
+              <h4 className="font-extrabold text-lg text-white mb-2">HL7/FHIR Telemetry Ingestion</h4>
+              <p className="text-xs text-slate-455 text-slate-400 leading-relaxed">
+                Fully compliant with enterprise healthcare interoperability schemas. Processes incoming clinical vitals payloads and translates them into live alert events instantaneously.
               </p>
             </div>
           </motion.div>
 
-          {/* Card 3 */}
+          {/* Spec Card 3 */}
           <motion.div 
-            whileHover={{ y: -5, borderColor: "rgba(255,255,255,0.2)" }}
-            className="bg-white/5 border border-white/10 rounded-2xl p-8 backdrop-blur-xl flex flex-col h-[320px] justify-between transition-colors duration-300"
+            whileHover={{ y: -5, borderColor: "rgba(255,255,255,0.18)" }}
+            className="bg-white/5 border border-white/10 rounded-2xl p-8 backdrop-blur-xl flex flex-col justify-between h-[320px] transition-colors"
           >
-            <div className="h-10 w-10 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400">
-              <ShieldCheck className="h-5 w-5" />
+            <div className="h-11 w-11 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400">
+              <Lock className="h-5.5 w-5.5" />
             </div>
             <div>
-              <h4 className="font-extrabold text-lg text-white mb-2">Zero-Trust Architecture</h4>
-              <p className="text-xs text-slate-400 leading-relaxed">
-                Secured via Enterprise Single Sign-On (SSO), RBAC permissions, and an immutable audit ledger documenting every clinical decision.
+              <h4 className="font-extrabold text-lg text-white mb-2">Pessimistic Locking Protection</h4>
+              <p className="text-xs text-slate-455 text-slate-400 leading-relaxed">
+                Active row-level locks protect resources at database transaction boundaries. Guarantees zero double-allocation conflicts when parallel triage coordinators handle bed transfer suggestions.
               </p>
             </div>
           </motion.div>
         </div>
-      </section>
+      </motion.section>
 
-      {/* ROI TELEMETRY STATS BANNER */}
-      <section id="telemetry" className="max-w-7xl mx-auto px-6 py-12 relative z-10">
-        <div className="w-full bg-white/5 border border-white/10 rounded-2xl p-8 sm:p-12 backdrop-blur-xl relative overflow-hidden shadow-2xl flex flex-col sm:flex-row items-center justify-between gap-8">
+      {/* BLOCK B: Live Operational Performance Telemetry Dashboard */}
+      <motion.section 
+        id="telemetry"
+        variants={scrollRevealVariants}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, margin: "-100px" }}
+        className="max-w-7xl mx-auto px-6 py-12 relative z-10"
+      >
+        <div className="w-full bg-white/5 border border-white/10 rounded-3xl p-8 sm:p-12 backdrop-blur-xl relative overflow-hidden shadow-2xl flex flex-col lg:flex-row items-center justify-between gap-12">
           <div className="absolute top-0 right-0 w-[200px] h-[200px] bg-indigo-500/5 rounded-full blur-[80px] pointer-events-none" />
           
           <div className="max-w-md">
-            <h3 className="font-extrabold text-lg sm:text-xl text-white mb-2">Pioneering Outcome Logs</h3>
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[9px] font-mono font-semibold uppercase mb-3">
+              Live Network Feed
+            </div>
+            <h3 className="font-extrabold text-xl sm:text-2xl text-white mb-3">Operational Performance Logs</h3>
             <p className="text-xs text-slate-400 leading-relaxed">
-              HospitalAI measures performance and outcome logging to demonstrate concrete ROI and timesaving stats directly to hospital administrators.
+              HospitalAI calculates real-time telemetry metrics to prove algorithmic efficacy and response times directly to clinical directors and hospital administrators.
             </p>
           </div>
 
-          <div className="flex flex-col sm:flex-row items-center gap-8 sm:gap-16 w-full sm:w-auto">
-            <div className="text-center sm:text-left">
-              <div className="text-3xl sm:text-4xl font-black text-emerald-400 drop-shadow-[0_0_12px_rgba(16,185,129,0.2)]">1.13s</div>
-              <div className="text-[10px] text-slate-500 uppercase tracking-widest font-mono mt-1">Median AI Response Time</div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 sm:gap-12 w-full lg:w-auto">
+            {/* Metric 1 */}
+            <div className="bg-slate-950/30 border border-white/5 rounded-2xl p-6 flex flex-col justify-between">
+              <div className="flex items-center gap-2 mb-2 text-[9px] font-mono text-slate-500">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-ping" />
+                OPTIMAL AI DISPATCH
+              </div>
+              <div className="text-3xl font-black text-white drop-shadow-[0_0_12px_rgba(255,255,255,0.08)]">1.13s</div>
+              <div className="text-[9px] text-slate-500 uppercase tracking-wider font-semibold mt-1">Median Response</div>
             </div>
-            <div className="text-center sm:text-left">
-              <div className="text-3xl sm:text-4xl font-black text-indigo-400 drop-shadow-[0_0_12px_rgba(99,102,241,0.2)]">100%</div>
-              <div className="text-[10px] text-slate-500 uppercase tracking-widest font-mono mt-1">Telemetry Data Retention</div>
+
+            {/* Metric 2 */}
+            <div className="bg-slate-950/30 border border-white/5 rounded-2xl p-6 flex flex-col justify-between">
+              <div className="flex items-center gap-2 mb-2 text-[9px] font-mono text-slate-500">
+                <span className="h-1.5 w-1.5 rounded-full bg-indigo-400" />
+                98% CI BOUND
+              </div>
+              <div className="text-3xl font-black text-emerald-400 drop-shadow-[0_0_12px_rgba(16,185,129,0.18)]">100%</div>
+              <div className="text-[9px] text-slate-500 uppercase tracking-wider font-semibold mt-1">AI Acceptance Rate</div>
+            </div>
+
+            {/* Metric 3 */}
+            <div className="bg-slate-950/30 border border-white/5 rounded-2xl p-6 flex flex-col justify-between">
+              <div className="flex items-center gap-2 mb-2 text-[9px] font-mono text-slate-500">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                0.2ms WEBHOOK DELAY
+              </div>
+              <div className="text-3xl font-black text-indigo-400 drop-shadow-[0_0_12px_rgba(99,102,241,0.18)]">0%</div>
+              <div className="text-[9px] text-slate-500 uppercase tracking-wider font-semibold mt-1">Packet Loss Rate</div>
             </div>
           </div>
         </div>
-      </section>
+      </motion.section>
+
+      {/* BLOCK C: Interactive Security & Compliance Accordion */}
+      <motion.section 
+        id="faq"
+        variants={scrollRevealVariants}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, margin: "-100px" }}
+        className="max-w-4xl mx-auto px-6 py-20 relative z-10 border-t border-white/5"
+      >
+        <div className="flex flex-col items-center text-center mb-12">
+          <h2 className="text-xs uppercase font-mono tracking-widest text-indigo-400 font-bold mb-3">Compliance & Security</h2>
+          <h3 className="text-2xl sm:text-3xl font-extrabold text-white">Trust & Governance Architecture</h3>
+        </div>
+
+        <div className="space-y-4">
+          {faqItems.map((item, idx) => {
+            const isOpen = openAccordion === idx;
+            return (
+              <div 
+                key={idx}
+                className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden transition-all duration-300"
+              >
+                <button
+                  onClick={() => setOpenAccordion(isOpen ? null : idx)}
+                  className="w-full px-6 py-5 flex items-center justify-between text-left font-bold text-sm sm:text-base text-white hover:bg-white/[0.02] transition-colors"
+                >
+                  <span>{item.q}</span>
+                  <ChevronDown className={`h-4.5 w-4.5 text-slate-400 transition-transform duration-300 ${isOpen ? "rotate-180 text-white" : ""}`} />
+                </button>
+                
+                <AnimatePresence initial={false}>
+                  {isOpen && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.3, ease: "easeInOut" }}
+                    >
+                      <div className="px-6 pb-6 pt-2 text-xs sm:text-sm text-slate-400 border-t border-white/5 leading-relaxed">
+                        {item.a}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            );
+          })}
+        </div>
+      </motion.section>
 
       {/* FOOTER */}
       <footer className="max-w-7xl mx-auto px-6 py-12 relative z-10 text-center border-t border-white/5">
