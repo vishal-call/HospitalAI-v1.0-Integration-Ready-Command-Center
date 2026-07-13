@@ -201,37 +201,117 @@ export default function LandingPage() {
                 className="h-48 w-48 rounded-full bg-blue-600 blur-[100px] absolute bottom-10 right-10 pointer-events-none"
               />
 
-              {/* Slow 360-degree rotating abstract constellation mesh */}
+              {/* Breathing abstract biotech heart mesh */}
               <motion.div 
-                animate={{ rotate: 360 }}
-                transition={{ repeat: Infinity, duration: 20, ease: "linear" }}
-                className="w-[80%] h-[80%] relative z-10 flex items-center justify-center"
+                animate={{ scale: [1, 1.04, 1] }}
+                transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
+                className="w-[85%] h-[85%] relative z-10 flex items-center justify-center"
               >
-                <svg className="w-full h-full text-slate-400" viewBox="0 0 200 200" fill="none">
-                  {/* Concentric rings */}
-                  <circle cx="100" cy="100" r="80" stroke="rgba(255,255,255,0.05)" strokeWidth="1" />
-                  <circle cx="100" cy="100" r="50" stroke="rgba(255,255,255,0.07)" strokeWidth="1" />
-                  <circle cx="100" cy="100" r="20" stroke="rgba(255,255,255,0.1)" strokeWidth="1" />
-                  {/* Constellation lines */}
-                  <line x1="100" y1="20" x2="150" y2="60" stroke="rgba(16, 185, 129, 0.25)" strokeWidth="1" />
-                  <line x1="150" y1="60" x2="160" y2="130" stroke="rgba(255,255,255,0.1)" strokeWidth="1" />
-                  <line x1="160" y1="130" x2="100" y2="180" stroke="rgba(59, 130, 246, 0.25)" strokeWidth="1" />
-                  <line x1="100" y1="180" x2="40" y2="130" stroke="rgba(255,255,255,0.1)" strokeWidth="1" />
-                  <line x1="40" y1="130" x2="50" y2="60" stroke="rgba(16, 185, 129, 0.25)" strokeWidth="1" />
-                  <line x1="50" y1="60" x2="100" y2="20" stroke="rgba(255,255,255,0.1)" strokeWidth="1" />
-                  {/* Inner links to core */}
-                  <line x1="100" y1="100" x2="100" y2="20" stroke="rgba(255, 255, 255, 0.08)" strokeWidth="1" />
-                  <line x1="100" y1="100" x2="150" y2="60" stroke="rgba(255, 255, 255, 0.08)" strokeWidth="1" />
-                  <line x1="100" y1="100" x2="160" y2="130" stroke="rgba(255, 255, 255, 0.08)" strokeWidth="1" />
-                  <line x1="100" y1="100" x2="100" y2="180" stroke="rgba(255, 255, 255, 0.08)" strokeWidth="1" />
-                  {/* Core nodes */}
-                  <circle cx="100" cy="20" r="4" fill="#10b981" />
-                  <circle cx="150" cy="60" r="3" fill="#ffffff" />
-                  <circle cx="160" cy="130" r="4" fill="#3b82f6" />
-                  <circle cx="100" cy="180" r="3" fill="#ffffff" />
-                  <circle cx="40" cy="130" r="4" fill="#10b981" />
-                  <circle cx="50" cy="60" r="3" fill="#3b82f6" />
-                  <circle cx="100" cy="100" r="5" fill="#6366f1" />
+                <svg className="w-full h-full" viewBox="0 0 200 200" fill="none">
+                  {/* Geometric heart outline paths */}
+                  <path 
+                    d="M 100 60 C 80 20, 30 20, 30 70 C 30 110, 60 140, 100 180 C 140 140, 170 110, 170 70 C 170 20, 120 20, 100 60 Z" 
+                    stroke="rgba(255, 255, 255, 0.1)" 
+                    strokeWidth="1.5" 
+                    strokeDasharray="4 4"
+                  />
+                  <path 
+                    d="M 100 75 C 85 45, 45 45, 45 80 C 45 110, 70 135, 100 165 C 130 135, 155 110, 155 80 C 155 45, 115 45, 100 75 Z" 
+                    stroke="rgba(255, 255, 255, 0.05)" 
+                    strokeWidth="1" 
+                  />
+
+                  {/* Connecting mesh lines */}
+                  <line x1="100" y1="60" x2="100" y2="180" stroke="rgba(255, 255, 255, 0.15)" strokeWidth="1" />
+                  <line x1="30" y1="70" x2="170" y2="70" stroke="rgba(255, 255, 255, 0.15)" strokeWidth="1" />
+                  <line x1="60" y1="30" x2="140" y2="120" stroke="rgba(255, 255, 255, 0.12)" strokeWidth="1" />
+                  <line x1="140" y1="30" x2="60" y2="120" stroke="rgba(255, 255, 255, 0.12)" strokeWidth="1" />
+                  <line x1="30" y1="70" x2="100" y2="120" stroke="rgba(255, 255, 255, 0.12)" strokeWidth="1" />
+                  <line x1="170" y1="70" x2="100" y2="120" stroke="rgba(255, 255, 255, 0.12)" strokeWidth="1" />
+                  <line x1="100" y1="60" x2="100" y2="120" stroke="rgba(255, 255, 255, 0.15)" strokeWidth="1" />
+                  <line x1="100" y1="180" x2="100" y2="120" stroke="rgba(255, 255, 255, 0.15)" strokeWidth="1" />
+
+                  {/* Nodes with individual slow micro-drifts */}
+                  {/* Node 1: Top Indentation */}
+                  <motion.g
+                    animate={{ x: [0, 1.2, -1.2, 0], y: [0, -1.2, 1.2, 0] }}
+                    transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                  >
+                    <circle cx="100" cy="60" r="4" fill="#ffffff" />
+                    <circle cx="100" cy="60" r="9" stroke="#ffffff" strokeWidth="1" className="opacity-25" />
+                  </motion.g>
+
+                  {/* Node 2: Left Lobe Top */}
+                  <motion.g
+                    animate={{ x: [0, -1.5, 1, 0], y: [0, 1, -1.5, 0] }}
+                    transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut" }}
+                  >
+                    <circle cx="60" cy="30" r="4.5" fill="#10b981" />
+                    <circle cx="60" cy="30" r="10" stroke="#10b981" strokeWidth="1" className="opacity-25" />
+                  </motion.g>
+
+                  {/* Node 3: Left Outer */}
+                  <motion.g
+                    animate={{ x: [0, 1, -1, 0], y: [0, -1.5, 1, 0] }}
+                    transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+                  >
+                    <circle cx="30" cy="70" r="4" fill="#3b82f6" />
+                    <circle cx="30" cy="70" r="9" stroke="#3b82f6" strokeWidth="1" className="opacity-25" />
+                  </motion.g>
+
+                  {/* Node 4: Left Lower */}
+                  <motion.g
+                    animate={{ x: [0, -1.2, 1.5, 0], y: [0, 1.2, -1.2, 0] }}
+                    transition={{ duration: 3.8, repeat: Infinity, ease: "easeInOut" }}
+                  >
+                    <circle cx="60" cy="120" r="4" fill="#ffffff" />
+                    <circle cx="60" cy="120" r="9" stroke="#ffffff" strokeWidth="1" className="opacity-25" />
+                  </motion.g>
+
+                  {/* Node 5: Bottom Apex */}
+                  <motion.g
+                    animate={{ x: [0, 1.2, -1.2, 0], y: [0, -1, 1, 0] }}
+                    transition={{ duration: 4.2, repeat: Infinity, ease: "easeInOut" }}
+                  >
+                    <circle cx="100" cy="180" r="5" fill="#10b981" />
+                    <circle cx="100" cy="180" r="12" stroke="#10b981" strokeWidth="1" className="opacity-25" />
+                  </motion.g>
+
+                  {/* Node 6: Right Lower */}
+                  <motion.g
+                    animate={{ x: [0, 1.5, -1.2, 0], y: [0, -1.2, 1.5, 0] }}
+                    transition={{ duration: 4.7, repeat: Infinity, ease: "easeInOut" }}
+                  >
+                    <circle cx="140" cy="120" r="4" fill="#ffffff" />
+                    <circle cx="140" cy="120" r="9" stroke="#ffffff" strokeWidth="1" className="opacity-25" />
+                  </motion.g>
+
+                  {/* Node 7: Right Outer */}
+                  <motion.g
+                    animate={{ x: [0, -1, 1, 0], y: [0, 1.5, -1, 0] }}
+                    transition={{ duration: 5.2, repeat: Infinity, ease: "easeInOut" }}
+                  >
+                    <circle cx="170" cy="70" r="4" fill="#3b82f6" />
+                    <circle cx="170" cy="70" r="9" stroke="#3b82f6" strokeWidth="1" className="opacity-25" />
+                  </motion.g>
+
+                  {/* Node 8: Right Lobe Top */}
+                  <motion.g
+                    animate={{ x: [0, 1, -1.5, 0], y: [0, -1, 1, 0] }}
+                    transition={{ duration: 4.9, repeat: Infinity, ease: "easeInOut" }}
+                  >
+                    <circle cx="140" cy="30" r="4.5" fill="#10b981" />
+                    <circle cx="140" cy="30" r="10" stroke="#10b981" strokeWidth="1" className="opacity-25" />
+                  </motion.g>
+
+                  {/* Center Core Node */}
+                  <motion.g
+                    animate={{ x: [0, -0.6, 0.6, 0], y: [0, 0.6, -0.6, 0] }}
+                    transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+                  >
+                    <circle cx="100" cy="120" r="5" fill="#6366f1" />
+                    <circle cx="100" cy="120" r="13" stroke="#6366f1" strokeWidth="1" className="opacity-20" />
+                  </motion.g>
                 </svg>
               </motion.div>
             </div>
