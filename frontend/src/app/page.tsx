@@ -201,117 +201,158 @@ export default function LandingPage() {
                 className="h-48 w-48 rounded-full bg-blue-600 blur-[100px] absolute bottom-10 right-10 pointer-events-none"
               />
 
-              {/* Breathing abstract biotech heart mesh */}
+              {/* Premium Animated Biotech DNA Helix Network */}
               <motion.div 
-                animate={{ scale: [1, 1.04, 1] }}
-                transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
-                className="w-[85%] h-[85%] relative z-10 flex items-center justify-center"
+                className="w-[90%] h-[90%] relative z-10 flex items-center justify-center"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.8 }}
               >
                 <svg className="w-full h-full" viewBox="0 0 200 200" fill="none">
-                  {/* Geometric heart outline paths */}
+                  {/* SVG Definitions for Gradients */}
+                  <defs>
+                    <linearGradient id="dna-gradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#a855f7" />
+                      <stop offset="50%" stopColor="#ec4899" />
+                      <stop offset="100%" stopColor="#4f46e5" />
+                    </linearGradient>
+                  </defs>
+
+                  {/* Connecting Base-Pair Horizontal Ladder Rungs */}
+                  <g stroke="rgba(255, 255, 255, 0.15)" strokeWidth="1">
+                    <line x1="80" y1="30" x2="120" y2="30" />
+                    <line x1="60" y1="40" x2="140" y2="40" />
+                    <line x1="80" y1="50" x2="120" y2="50" />
+                    
+                    <line x1="80" y1="70" x2="120" y2="70" />
+                    <line x1="60" y1="80" x2="140" y2="80" />
+                    <line x1="80" y1="90" x2="120" y2="90" />
+                    
+                    <line x1="80" y1="110" x2="120" y2="110" />
+                    <line x1="60" y1="120" x2="140" y2="120" />
+                    <line x1="80" y1="130" x2="120" y2="130" />
+                    
+                    <line x1="80" y1="150" x2="120" y2="150" />
+                    <line x1="60" y1="160" x2="140" y2="160" />
+                    <line x1="80" y1="170" x2="120" y2="170" />
+                  </g>
+
+                  {/* Intricate Geometric Data-Mesh Lattice Structure */}
+                  <g stroke="rgba(100, 116, 139, 0.25)" strokeWidth="0.75">
+                    {/* Lattice linkages mapping a diamond centerfold along the helix cross-sections */}
+                    <line x1="140" y1="40" x2="100" y2="60" />
+                    <line x1="60" y1="40" x2="100" y2="60" />
+                    <line x1="100" y1="60" x2="60" y2="80" />
+                    <line x1="100" y1="60" x2="140" y2="80" />
+                    <line x1="60" y1="80" x2="100" y2="100" />
+                    <line x1="140" y1="80" x2="100" y2="100" />
+                    <line x1="100" y1="100" x2="140" y2="120" />
+                    <line x1="100" y1="100" x2="60" y2="120" />
+                    <line x1="140" y1="120" x2="100" y2="140" />
+                    <line x1="60" y1="120" x2="100" y2="140" />
+                    <line x1="100" y1="140" x2="60" y2="160" />
+                    <line x1="100" y1="140" x2="140" y2="160" />
+                    <line x1="60" y1="160" x2="100" y2="180" />
+                    <line x1="140" y1="160" x2="100" y2="180" />
+
+                    {/* Long range diagonal linkages */}
+                    <line x1="140" y1="40" x2="100" y2="100" />
+                    <line x1="60" y1="40" x2="100" y2="100" />
+                    <line x1="60" y1="80" x2="100" y2="140" />
+                    <line x1="140" y1="80" x2="100" y2="140" />
+                    <line x1="140" y1="120" x2="100" y2="180" />
+                    <line x1="60" y1="120" x2="100" y2="180" />
+                  </g>
+
+                  {/* DNA Double-Helix Strands (Strand A & Strand B) */}
+                  {/* Glow layer (thick blur) */}
                   <path 
-                    d="M 100 60 C 80 20, 30 20, 30 70 C 30 110, 60 140, 100 180 C 140 140, 170 110, 170 70 C 170 20, 120 20, 100 60 Z" 
-                    stroke="rgba(255, 255, 255, 0.1)" 
-                    strokeWidth="1.5" 
-                    strokeDasharray="4 4"
+                    d="M 100 20 C 120 20, 140 30, 140 40 C 140 50, 120 60, 100 60 C 80 60, 60 70, 60 80 C 60 90, 80 100, 100 100 C 120 100, 140 110, 140 120 C 140 130, 120 140, 100 140 C 80 140, 60 150, 60 160 C 60 170, 80 180, 100 180" 
+                    stroke="url(#dna-gradient)" 
+                    strokeWidth="5" 
+                    fill="none"
+                    className="opacity-20 blur-sm pointer-events-none"
                   />
                   <path 
-                    d="M 100 75 C 85 45, 45 45, 45 80 C 45 110, 70 135, 100 165 C 130 135, 155 110, 155 80 C 155 45, 115 45, 100 75 Z" 
-                    stroke="rgba(255, 255, 255, 0.05)" 
-                    strokeWidth="1" 
+                    d="M 100 20 C 80 20, 60 30, 60 40 C 60 50, 80 60, 100 60 C 120 60, 140 70, 140 80 C 140 90, 120 100, 100 100 C 80 100, 60 110, 60 120 C 60 130, 80 140, 100 140 C 120 140, 140 150, 140 160 C 140 170, 120 180, 100 180" 
+                    stroke="url(#dna-gradient)" 
+                    strokeWidth="5" 
+                    fill="none"
+                    className="opacity-20 blur-sm pointer-events-none"
                   />
 
-                  {/* Connecting mesh lines */}
-                  <line x1="100" y1="60" x2="100" y2="180" stroke="rgba(255, 255, 255, 0.15)" strokeWidth="1" />
-                  <line x1="30" y1="70" x2="170" y2="70" stroke="rgba(255, 255, 255, 0.15)" strokeWidth="1" />
-                  <line x1="60" y1="30" x2="140" y2="120" stroke="rgba(255, 255, 255, 0.12)" strokeWidth="1" />
-                  <line x1="140" y1="30" x2="60" y2="120" stroke="rgba(255, 255, 255, 0.12)" strokeWidth="1" />
-                  <line x1="30" y1="70" x2="100" y2="120" stroke="rgba(255, 255, 255, 0.12)" strokeWidth="1" />
-                  <line x1="170" y1="70" x2="100" y2="120" stroke="rgba(255, 255, 255, 0.12)" strokeWidth="1" />
-                  <line x1="100" y1="60" x2="100" y2="120" stroke="rgba(255, 255, 255, 0.15)" strokeWidth="1" />
-                  <line x1="100" y1="180" x2="100" y2="120" stroke="rgba(255, 255, 255, 0.15)" strokeWidth="1" />
+                  {/* Main Strand Paths with Active Telemetry Stream flow */}
+                  <motion.path 
+                    d="M 100 20 C 120 20, 140 30, 140 40 C 140 50, 120 60, 100 60 C 80 60, 60 70, 60 80 C 60 90, 80 100, 100 100 C 120 100, 140 110, 140 120 C 140 130, 120 140, 100 140 C 80 140, 60 150, 60 160 C 60 170, 80 180, 100 180" 
+                    stroke="url(#dna-gradient)" 
+                    strokeWidth="2.5" 
+                    fill="none"
+                    strokeDasharray="25 15"
+                    animate={{ strokeDashoffset: [0, -80] }}
+                    transition={{ duration: 5, repeat: Infinity, ease: "linear" }}
+                  />
+                  <motion.path 
+                    d="M 100 20 C 80 20, 60 30, 60 40 C 60 50, 80 60, 100 60 C 120 60, 140 70, 140 80 C 140 90, 120 100, 100 100 C 80 100, 60 110, 60 120 C 60 130, 80 140, 100 140 C 120 140, 140 150, 140 160 C 140 170, 120 180, 100 180" 
+                    stroke="url(#dna-gradient)" 
+                    strokeWidth="2.5" 
+                    fill="none"
+                    strokeDasharray="25 15"
+                    animate={{ strokeDashoffset: [0, 80] }}
+                    transition={{ duration: 5, repeat: Infinity, ease: "linear" }}
+                  />
 
-                  {/* Nodes with individual slow micro-drifts */}
-                  {/* Node 1: Top Indentation */}
-                  <motion.g
-                    animate={{ x: [0, 1.2, -1.2, 0], y: [0, -1.2, 1.2, 0] }}
-                    transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                  >
-                    <circle cx="100" cy="60" r="4" fill="#ffffff" />
-                    <circle cx="100" cy="60" r="9" stroke="#ffffff" strokeWidth="1" className="opacity-25" />
-                  </motion.g>
+                  {/* Telemetry Node Network Points (Breathing scale and opacity cycles) */}
+                  {/* Node 1: Top Center */}
+                  <motion.circle cx="100" cy="20" r="3.5" fill="#ffffff" animate={{ scale: [1, 1.25, 1], opacity: [0.7, 1, 0.7] }} transition={{ duration: 2.1, repeat: Infinity, ease: "easeInOut" }} />
+                  <circle cx="100" cy="20" r="7" stroke="#ffffff" strokeWidth="0.75" className="opacity-20" />
 
-                  {/* Node 2: Left Lobe Top */}
-                  <motion.g
-                    animate={{ x: [0, -1.5, 1, 0], y: [0, 1, -1.5, 0] }}
-                    transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut" }}
-                  >
-                    <circle cx="60" cy="30" r="4.5" fill="#10b981" />
-                    <circle cx="60" cy="30" r="10" stroke="#10b981" strokeWidth="1" className="opacity-25" />
-                  </motion.g>
+                  {/* Node 2: Strand A Crest 1 */}
+                  <motion.circle cx="140" cy="40" r="4.5" fill="#10b981" animate={{ scale: [1, 1.3, 1], opacity: [0.6, 1, 0.6] }} transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut", delay: 0.2 }} />
+                  <circle cx="140" cy="40" r="9" stroke="#10b981" strokeWidth="0.75" className="opacity-20" />
 
-                  {/* Node 3: Left Outer */}
-                  <motion.g
-                    animate={{ x: [0, 1, -1, 0], y: [0, -1.5, 1, 0] }}
-                    transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-                  >
-                    <circle cx="30" cy="70" r="4" fill="#3b82f6" />
-                    <circle cx="30" cy="70" r="9" stroke="#3b82f6" strokeWidth="1" className="opacity-25" />
-                  </motion.g>
+                  {/* Node 3: Strand B Trough 1 */}
+                  <motion.circle cx="60" cy="40" r="4" fill="#3b82f6" animate={{ scale: [1, 1.2, 1], opacity: [0.7, 1, 0.7] }} transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut", delay: 0.4 }} />
+                  <circle cx="60" cy="40" r="8" stroke="#3b82f6" strokeWidth="0.75" className="opacity-20" />
 
-                  {/* Node 4: Left Lower */}
-                  <motion.g
-                    animate={{ x: [0, -1.2, 1.5, 0], y: [0, 1.2, -1.2, 0] }}
-                    transition={{ duration: 3.8, repeat: Infinity, ease: "easeInOut" }}
-                  >
-                    <circle cx="60" cy="120" r="4" fill="#ffffff" />
-                    <circle cx="60" cy="120" r="9" stroke="#ffffff" strokeWidth="1" className="opacity-25" />
-                  </motion.g>
+                  {/* Node 4: Cross-section 1 */}
+                  <motion.circle cx="100" cy="60" r="3.5" fill="#ffffff" animate={{ scale: [1, 1.25, 1], opacity: [0.7, 1, 0.7] }} transition={{ duration: 2.1, repeat: Infinity, ease: "easeInOut", delay: 0.1 }} />
+                  <circle cx="100" cy="60" r="7" stroke="#ffffff" strokeWidth="0.75" className="opacity-20" />
 
-                  {/* Node 5: Bottom Apex */}
-                  <motion.g
-                    animate={{ x: [0, 1.2, -1.2, 0], y: [0, -1, 1, 0] }}
-                    transition={{ duration: 4.2, repeat: Infinity, ease: "easeInOut" }}
-                  >
-                    <circle cx="100" cy="180" r="5" fill="#10b981" />
-                    <circle cx="100" cy="180" r="12" stroke="#10b981" strokeWidth="1" className="opacity-25" />
-                  </motion.g>
+                  {/* Node 5: Strand A Trough 1 */}
+                  <motion.circle cx="60" cy="80" r="4.5" fill="#10b981" animate={{ scale: [1, 1.3, 1], opacity: [0.6, 1, 0.6] }} transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut", delay: 0.3 }} />
+                  <circle cx="60" cy="80" r="9" stroke="#10b981" strokeWidth="0.75" className="opacity-20" />
 
-                  {/* Node 6: Right Lower */}
-                  <motion.g
-                    animate={{ x: [0, 1.5, -1.2, 0], y: [0, -1.2, 1.5, 0] }}
-                    transition={{ duration: 4.7, repeat: Infinity, ease: "easeInOut" }}
-                  >
-                    <circle cx="140" cy="120" r="4" fill="#ffffff" />
-                    <circle cx="140" cy="120" r="9" stroke="#ffffff" strokeWidth="1" className="opacity-25" />
-                  </motion.g>
+                  {/* Node 6: Strand B Crest 1 */}
+                  <motion.circle cx="140" cy="80" r="4" fill="#3b82f6" animate={{ scale: [1, 1.2, 1], opacity: [0.7, 1, 0.7] }} transition={{ duration: 2.3, repeat: Infinity, ease: "easeInOut", delay: 0.5 }} />
+                  <circle cx="140" cy="80" r="8" stroke="#3b82f6" strokeWidth="0.75" className="opacity-20" />
 
-                  {/* Node 7: Right Outer */}
-                  <motion.g
-                    animate={{ x: [0, -1, 1, 0], y: [0, 1.5, -1, 0] }}
-                    transition={{ duration: 5.2, repeat: Infinity, ease: "easeInOut" }}
-                  >
-                    <circle cx="170" cy="70" r="4" fill="#3b82f6" />
-                    <circle cx="170" cy="70" r="9" stroke="#3b82f6" strokeWidth="1" className="opacity-25" />
-                  </motion.g>
+                  {/* Node 7: Cross-section 2 */}
+                  <motion.circle cx="100" cy="100" r="3.5" fill="#ffffff" animate={{ scale: [1, 1.25, 1], opacity: [0.7, 1, 0.7] }} transition={{ duration: 2.1, repeat: Infinity, ease: "easeInOut", delay: 0.2 }} />
+                  <circle cx="100" cy="100" r="7" stroke="#ffffff" strokeWidth="0.75" className="opacity-20" />
 
-                  {/* Node 8: Right Lobe Top */}
-                  <motion.g
-                    animate={{ x: [0, 1, -1.5, 0], y: [0, -1, 1, 0] }}
-                    transition={{ duration: 4.9, repeat: Infinity, ease: "easeInOut" }}
-                  >
-                    <circle cx="140" cy="30" r="4.5" fill="#10b981" />
-                    <circle cx="140" cy="30" r="10" stroke="#10b981" strokeWidth="1" className="opacity-25" />
-                  </motion.g>
+                  {/* Node 8: Strand A Crest 2 */}
+                  <motion.circle cx="140" cy="120" r="4.5" fill="#10b981" animate={{ scale: [1, 1.3, 1], opacity: [0.6, 1, 0.6] }} transition={{ duration: 2.6, repeat: Infinity, ease: "easeInOut", delay: 0.4 }} />
+                  <circle cx="140" cy="120" r="9" stroke="#10b981" strokeWidth="0.75" className="opacity-20" />
 
-                  {/* Center Core Node */}
-                  <motion.g
-                    animate={{ x: [0, -0.6, 0.6, 0], y: [0, 0.6, -0.6, 0] }}
-                    transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-                  >
-                    <circle cx="100" cy="120" r="5" fill="#6366f1" />
-                    <circle cx="100" cy="120" r="13" stroke="#6366f1" strokeWidth="1" className="opacity-20" />
-                  </motion.g>
+                  {/* Node 9: Strand B Trough 2 */}
+                  <motion.circle cx="60" cy="120" r="4" fill="#3b82f6" animate={{ scale: [1, 1.2, 1], opacity: [0.7, 1, 0.7] }} transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut", delay: 0.6 }} />
+                  <circle cx="60" cy="120" r="8" stroke="#3b82f6" strokeWidth="0.75" className="opacity-20" />
+
+                  {/* Node 10: Cross-section 3 */}
+                  <motion.circle cx="100" cy="140" r="3.5" fill="#ffffff" animate={{ scale: [1, 1.25, 1], opacity: [0.7, 1, 0.7] }} transition={{ duration: 2.1, repeat: Infinity, ease: "easeInOut", delay: 0.3 }} />
+                  <circle cx="100" cy="140" r="7" stroke="#ffffff" strokeWidth="0.75" className="opacity-20" />
+
+                  {/* Node 11: Strand A Trough 2 */}
+                  <motion.circle cx="60" cy="160" r="4.5" fill="#10b981" animate={{ scale: [1, 1.3, 1], opacity: [0.6, 1, 0.6] }} transition={{ duration: 2.7, repeat: Infinity, ease: "easeInOut", delay: 0.5 }} />
+                  <circle cx="60" cy="160" r="9" stroke="#10b981" strokeWidth="0.75" className="opacity-20" />
+
+                  {/* Node 12: Strand B Crest 2 */}
+                  <motion.circle cx="140" cy="160" r="4" fill="#3b82f6" animate={{ scale: [1, 1.2, 1], opacity: [0.7, 1, 0.7] }} transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut", delay: 0.7 }} />
+                  <circle cx="140" cy="160" r="8" stroke="#3b82f6" strokeWidth="0.75" className="opacity-20" />
+
+                  {/* Node 13: Bottom Center */}
+                  <motion.circle cx="100" cy="180" r="3.5" fill="#ffffff" animate={{ scale: [1, 1.25, 1], opacity: [0.7, 1, 0.7] }} transition={{ duration: 2.1, repeat: Infinity, ease: "easeInOut", delay: 0.4 }} />
+                  <circle cx="100" cy="180" r="7" stroke="#ffffff" strokeWidth="0.75" className="opacity-20" />
                 </svg>
               </motion.div>
             </div>
