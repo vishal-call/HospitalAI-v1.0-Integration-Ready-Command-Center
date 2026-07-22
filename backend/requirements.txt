@@ -16,4 +16,5 @@ asgi-correlation-id>=4.3.0
 tenacity>=8.3.0
 fpdf2>=2.7.8
 python-multipart>=0.0.9
+alembic>=1.13.0
 
