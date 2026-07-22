@@ -305,6 +305,19 @@ async def background_escalation_worker():
 
 @app.on_event("startup")
 async def startup_event():
+    # Programmatically apply Alembic migrations
+    try:
+        import subprocess
+        import sys
+        logger.info("Running database migrations check via Alembic subprocess...")
+        res = subprocess.run([sys.executable, "-m", "alembic", "upgrade", "head"], capture_output=True, text=True)
+        if res.returncode == 0:
+            logger.info("Database migrations successfully applied.")
+        else:
+            logger.error(f"Alembic auto-migration failed with code {res.returncode}. Stderr: {res.stderr}")
+    except Exception as migration_error:
+        logger.error(f"Alembic auto-migration failed: {migration_error}. Proceeding anyway...")
+
     asyncio.create_task(broadcast_dashboard_updates())
     asyncio.create_task(send_websocket_heartbeat())
     asyncio.create_task(background_escalation_worker())
