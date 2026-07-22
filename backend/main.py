@@ -308,9 +308,8 @@ async def startup_event():
     # Programmatically apply Alembic migrations
     try:
         import subprocess
-        import sys
-        logger.info("Running database migrations check via Alembic subprocess...")
-        res = subprocess.run([sys.executable, "-m", "alembic", "upgrade", "head"], capture_output=True, text=True)
+        logger.info("Running database migrations check via Alembic...")
+        res = subprocess.run(["alembic", "upgrade", "head"], capture_output=True, text=True)
         if res.returncode == 0:
             logger.info("Database migrations successfully applied.")
         else:
@@ -370,8 +369,7 @@ async def health_check():
 @app.get("/api/debug/migrate")
 async def debug_migrate():
     import subprocess
-    import sys
-    res = subprocess.run([sys.executable, "-m", "alembic", "upgrade", "head"], capture_output=True, text=True)
+    res = subprocess.run(["alembic", "upgrade", "head"], capture_output=True, text=True)
     return {
         "returncode": res.returncode,
         "stdout": res.stdout,
