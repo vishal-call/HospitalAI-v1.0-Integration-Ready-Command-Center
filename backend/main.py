@@ -367,6 +367,17 @@ async def root():
 async def health_check():
     return {"status": "ok", "service": "HospitalAI"}
 
+@app.get("/api/debug/migrate")
+async def debug_migrate():
+    import subprocess
+    import sys
+    res = subprocess.run([sys.executable, "-m", "alembic", "upgrade", "head"], capture_output=True, text=True)
+    return {
+        "returncode": res.returncode,
+        "stdout": res.stdout,
+        "stderr": res.stderr
+    }
+
 def serialize_dt(dt):
     if dt is None:
         return None
